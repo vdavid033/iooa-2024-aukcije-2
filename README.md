@@ -1,6 +1,7 @@
 # iooa2024-aukcije
 Projekt Aukcije za kolegij IOOA 
 Goran Vrban
+Dorian Lulić
 
 # Testiranje
 Testira se grana svespojeno  
