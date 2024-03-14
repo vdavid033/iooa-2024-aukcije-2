@@ -1,5 +1,6 @@
 # iooa2023-aukcije
 Projekt Aukcije za kolegij IOOA 
+Dominik Pilat
 
 # Testiranje
 Testira se grana svespojeno  
