@@ -1,8 +1,11 @@
 # iooa2024-aukcije
 Projekt Aukcije za kolegij IOOA 
-Goran Vrban
-Dorian Lulić
-Dominik Pilat
+Goran Vrban,
+Dorian Lulić,
+Dominik Pilat,
+Emmanuel Gordan Fett,
+Mateo Feltrin
+
 # Testiranje
 Testira se grana svespojeno  
 Pod issues zadaci su označeni labelom test.  
