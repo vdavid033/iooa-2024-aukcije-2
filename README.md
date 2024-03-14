@@ -1,6 +1,6 @@
-# iooa2023-aukcije
+# iooa2024-aukcije
 Projekt Aukcije za kolegij IOOA 
-
+Goran Vrban
 
 # Testiranje
 Testira se grana svespojeno  
