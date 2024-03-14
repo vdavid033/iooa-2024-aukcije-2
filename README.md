@@ -2,7 +2,7 @@
 Projekt Aukcije za kolegij IOOA 
 Goran Vrban
 Dorian Lulić
-
+Dominik Pilat
 # Testiranje
 Testira se grana svespojeno  
 Pod issues zadaci su označeni labelom test.  
