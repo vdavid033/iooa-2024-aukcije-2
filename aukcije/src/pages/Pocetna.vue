@@ -19,7 +19,7 @@
         </q-card>
       </div>
     </div>
-  </q-card>
+
 
   <q-item class="q-pa-sm text-bold text-blue-7" style="font-size: 30px"
     >Zadnje ili trenutne aukcije
@@ -50,6 +50,7 @@
       </q-card>
     </div>
   </div>
+</q-card>
 </template>
 
 <script>

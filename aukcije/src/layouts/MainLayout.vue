@@ -26,7 +26,7 @@
             placeholder="Search"
             dense
             class="w-200"
-            @keyup.enter="searchItems"
+            @click="searchItems"
           />
       
           <q-btn
@@ -170,9 +170,3 @@ export default defineComponent({
   },
 });
 </script>
-<style>
-.q-avatar{
-  height: 64px;
-  width: 64px;
-}
-</style>

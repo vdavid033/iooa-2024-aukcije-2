@@ -6,9 +6,5 @@ Dominik Pilat,
 Emmanuel Gordan Fett,
 Mateo Feltrin
 
-# Testiranje
-Testira se grana svespojeno  
-Pod issues zadaci su označeni labelom test.  
-Svatko može uzeti jedan zadatak za testiranje. Prilikom testiranja pod issues napišite:
- - glavni uspješni scenarij (korisnik započinje scenarij od naslovne stranice)
- - što ne radi pod kojim uvjetima - testirajte ostale slučajeve i napišite ukoliko postoji greška i kako se dolazi do nje.
+
+Node.js 16.20.2

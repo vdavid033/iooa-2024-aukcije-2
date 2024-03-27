@@ -1,52 +1,17 @@
-
-import Pocetna from "pages/Pocetna.vue";
-import konverter from "pages/konverter.vue";
-import PostaviAukciju from "pages/PostaviAukciju.vue";
-import PrikazAukcije from "pages/PrikazAukcije.vue";
-import PrikazPredmetaKategorije from "pages/PrikazPredmetaKategorije.vue";
-
 const routes = [
   {
     path: "/",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      {
-        path: "/",
-        redirect: "/pocetna",
-      },
-      {
-        path: "pocetna",
-        component: Pocetna,
-      },
-      {
-        path: "postavi",
-        component: PostaviAukciju,
-      },
-      {
-        path: "prikaz",
-        component: PrikazAukcije,
-      },
-      {
-        path: "kategorija",
-        component: PrikazPredmetaKategorije,
-      },
-      {
-        path: "konverter",
-        component: konverter,
-      },
-      {
-        path: "prijava",
-        component: () => import("pages/Prijava_m.vue"),
-      },
-      {
-        path: "registracija",
-        component: () => import("pages/Registracija_m.vue"),
-      },
-       {
-        path: "Moj_profil",
-       component: () => import("pages/Moj_profil.vue"),
-      }
-
+      { path: "/", component: () => import("pages/Pocetna.vue") },
+      { path: "pocetna", component: () => import("pages/Pocetna.vue") },
+      { path: "postavi", component: () => import("pages/PostaviAukciju.vue") },
+      { path: "prikaz", component: () => import("pages/PostaviAukciju.vue") },
+      { path: "kategorija", component: () => import("pages/PrikazPredmetaKategorije.vue") },
+      { path: "konverter", component: () => import("pages/konverter.vue") },
+      { path: "prijava", component: () => import("pages/konverter.vue") },
+      { path: "registracija", component: () => import("pages/Registracija_m.vue") },
+      { path: "Moj_profil", component: () => import("pages/Moj_profil.vue") },
     ],
   },
 

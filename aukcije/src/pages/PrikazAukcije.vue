@@ -151,7 +151,14 @@ export default {
         { label: "1000 €" },
       ],
       potvrdjenaCijena: null,
-      
+      predmet: {
+        id_ponude:null,
+        vrijednost_ponude: null, 
+        vrijeme_ponude: null,
+        id_korisnika: null,
+        sifra_predmeta: null, 
+        
+      },
     };
   },
   mounted() {
@@ -159,6 +166,7 @@ export default {
       .get(baseUrl + "get-predmet/" + this.sifra_predmeta, {})
       .then((response) => {
         this.item = response.data[0];
+        this.potvrdjenaCijena = this.item.pocetna_cijena;
       });
 
       axios
@@ -176,10 +184,41 @@ export default {
     },
     potvrdiPonudu() {
       if (this.odabranaCijena) {
-        this.potvrdjenaCijena = this.odabranaCijena;
+        // Increase the current price based on the selected value
+        const selectedPrice = parseInt(this.odabranaCijena.label);
+        const currentPrice = parseInt(this.potvrdjenaCijena);
+        const newPrice = currentPrice + selectedPrice;
+
+        // Update the displayed price
+        this.potvrdjenaCijena = newPrice;
+        
+        const currentDate = new Date();
+        const formattedTime = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()} ${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
+
+        const podaciPonude = {
+          sifra_predmeta: this.sifra_predmeta,
+          vrijednost_ponude: this.potvrdjenaCijena,
+          id_ponude: this.id_ponude,
+          vrijeme_ponude: formattedTime,
+          id_korisnika: 4,
+        };
+
+        
+        axios.post('http://localhost:3000/unostrenutnaponuda', podaciPonude)
+      .then(response => {
+        console.log('New price stored successfully:', response.data);
+        // Handle the response data
+      })
+      .catch(error => {
+        console.error('Error storing new price:', error);
+        // Handle the error
+      });
+
+        // Close the dialog
         this.showDialog = false;
       }
-    },
+    }, 
+    
   },
 
   setup() {
