@@ -22,7 +22,7 @@ const connection = mysql.createConnection({
   host: "student.veleri.hr",
   user: "iooa-aukcije",
   password: "11",
-  database: "iooa-aukcije",
+  database: "iooa-aukcije1",
 });
 
 connection.connect();
