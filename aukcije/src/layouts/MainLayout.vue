@@ -10,9 +10,11 @@
           aria-label="Menu"
           @click="toggleLeftDrawer"/>
         <q-toolbar-title>
-          <q-avatar>
-            <img src="~assets\aukcije_logo.jpg" alt="Logo">
-          </q-avatar>
+          <router-link to="/" class="link-style">
+            <q-avatar>
+              <img src="~assets\aukcije_logo.jpg" alt="Logo">
+            </q-avatar>
+        </router-link>
         </q-toolbar-title>
 
         <q-space></q-space>
