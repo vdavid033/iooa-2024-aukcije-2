@@ -9,7 +9,7 @@ const routes = [
       { path: "prikaz", component: () => import("pages/PostaviAukciju.vue") },
       { path: "kategorija", component: () => import("pages/PrikazPredmetaKategorije.vue") },
       { path: "konverter", component: () => import("pages/konverter.vue") },
-      { path: "prijava", component: () => import("pages/konverter.vue") },
+      { path: "prijava", component: () => import("pages/Prijava_m.vue") },
       { path: "registracija", component: () => import("pages/Registracija_m.vue") },
       { path: "Moj_profil", component: () => import("pages/Moj_profil.vue") },
     ],
