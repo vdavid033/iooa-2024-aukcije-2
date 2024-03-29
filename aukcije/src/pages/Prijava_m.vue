@@ -32,7 +32,7 @@
   </script>
   
   <style>
-  .q-card {
+  .q-pa-lg {
     width: 360px;
   }
   </style>
