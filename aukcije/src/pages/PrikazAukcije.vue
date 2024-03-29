@@ -4,14 +4,7 @@
       <div class="text-h3 text-bold text-center text-blue-7 q-ml-sm">
         Prikaz aukcije
         <div class="q-ml-sm flex justify-end q-gutter-sm">
-          <q-btn
-            size="15px"
-            name="send"
-            rel="stylesheet"
-            to="/"
-            color="red"
-            label="Natrag"
-          />
+          <q-btn size="15px" name="send" rel="stylesheet" to="/" color="red" label="Natrag" />
         </div>
       </div>
     </q-card-section>
@@ -36,19 +29,6 @@
         </q-field>
       </div>
     </div>
-
-    <div class="q-ml-sm flex flex-start q-gutter-sm">
-      <div style="width: 500px">
-        <q-field rounded filled label="Svrha donacije " stack-label>
-          <template v-slot:control>
-            <div class="self-center full-width no-outline" tabindex="0">
-              {{ item.svrha_donacije }}
-            </div>
-          </template>
-        </q-field>
-      </div>
-    </div>
-
     <div class="q-pa-sm col flex flex-start q-gutter-sm">
       <div class="row flex flex-center">
         <div style="width: 600px">
@@ -88,14 +68,10 @@
         </div>
         <div style="width: 400px">
           <q-field rounded filled label="Trenutna cijena " stack-label>
-            
-  
-    <div class="self-center full-width no-outline" tabindex="0">
-      {{ item.trenutna_cijena + "$" }}
-    </div>
-  
-</q-field>
-         
+            <div class="self-center full-width no-outline" tabindex="0">
+              {{ item.trenutna_cijena + "$" }}
+            </div>
+          </q-field>
         </div>
       </div>
     </div>
@@ -109,13 +85,7 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <q-select
-            rounded
-            outlined
-            v-model="odabranaCijena"
-            :options="prices"
-            label="Odaberi cijenu"
-          />
+          <q-select rounded outlined v-model="odabranaCijena" :options="prices" label="Odaberi cijenu" />
         </q-card-section>
 
         <q-card-actions align="right" class="bg-white text-teal">
@@ -133,8 +103,8 @@ const baseUrl = "http://localhost:3000/api/";
 
 export default {
   computed: {
-    sifra_predmeta() {
-      return this.$route.query.sifra_predmeta;
+    id_predmeta() {
+      return this.$route.query.id_predmeta;
     },
   },
   data() {
@@ -142,40 +112,26 @@ export default {
       item: [],
       showDialog: false,
       odabranaCijena: null,
-      prices: [
-        { label: "100 €" },
-        { label: "200 €" },
-        { label: "300 €" },
-        { label: "400 €" },
-        { label: "500 €" },
-        { label: "1000 €" },
-      ],
+      prices: [{ label: "100 €" }, { label: "200 €" }, { label: "300 €" }, { label: "400 €" }, { label: "500 €" }, { label: "1000 €" }],
       potvrdjenaCijena: null,
       predmet: {
-        id_ponude:null,
-        vrijednost_ponude: null, 
+        id_ponude: null,
+        vrijednost_ponude: null,
         vrijeme_ponude: null,
         id_korisnika: null,
-        sifra_predmeta: null, 
-        
+        id_predmeta: null,
       },
     };
   },
   mounted() {
-    axios
-      .get(baseUrl + "get-predmet/" + this.sifra_predmeta, {})
-      .then((response) => {
-        this.item = response.data[0];
-        this.potvrdjenaCijena = this.item.pocetna_cijena;
-      });
-
-      axios
-    .get(baseUrl + "get-predmet-trenutna-cijena/" + this.sifra_predmeta, {})
-    .then((response) => {
+    axios.get(baseUrl + "get-predmet/" + this.id_predmeta, {}).then((response) => {
       this.item = response.data[0];
-     
+      this.potvrdjenaCijena = this.item.pocetna_cijena;
     });
-     
+
+    axios.get(baseUrl + "get-predmet-trenutna-cijena/" + this.id_predmeta, {}).then((response) => {
+      this.item = response.data[0];
+    });
   },
 
   methods: {
@@ -191,34 +147,33 @@ export default {
 
         // Update the displayed price
         this.potvrdjenaCijena = newPrice;
-        
+
         const currentDate = new Date();
         const formattedTime = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()} ${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
 
         const podaciPonude = {
-          sifra_predmeta: this.sifra_predmeta,
+          id_predmeta: this.id_predmeta,
           vrijednost_ponude: this.potvrdjenaCijena,
           id_ponude: this.id_ponude,
           vrijeme_ponude: formattedTime,
           id_korisnika: 4,
         };
 
-        
-        axios.post('http://localhost:3000/unostrenutnaponuda', podaciPonude)
-      .then(response => {
-        console.log('New price stored successfully:', response.data);
-        // Handle the response data
-      })
-      .catch(error => {
-        console.error('Error storing new price:', error);
-        // Handle the error
-      });
+        axios
+          .post("http://localhost:3000/unostrenutnaponuda", podaciPonude)
+          .then((response) => {
+            console.log("New price stored successfully:", response.data);
+            // Handle the response data
+          })
+          .catch((error) => {
+            console.error("Error storing new price:", error);
+            // Handle the error
+          });
 
         // Close the dialog
         this.showDialog = false;
       }
-    }, 
-    
+    },
   },
 
   setup() {
