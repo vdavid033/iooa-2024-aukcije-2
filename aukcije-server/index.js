@@ -160,8 +160,12 @@ app.listen(port, () => {
 app.post("/regaKorisnika", function (request, response) {
   const data = request.body;
   korisnik = [[data.ime, data.prezime, data.email, data.lozinka, data.adresa]];
+
   connection.query("INSERT INTO korisnik (ime_korisnika, prezime_korisnika, email_korisnika, lozinka_korisnika, adresa_korisnika) VALUES ?", [korisnik], function (error, results, fields) {
-    if (error) throw error;
+    if (error) {
+      console.error('Registracija korisnika neuspješna.', error);
+      return response.status(500).json({ error: true, message: "Registracija korisnika neuspješna." });
+    }
     console.log("data", data);
     return response.send({ error: false, data: results, message: "Uspješna registracija!" });
   });

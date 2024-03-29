@@ -76,6 +76,16 @@ export default {
           message: 'Registracija uspješna!'
         })
       } catch (error) {
+        if (error.sqlState = '23000')
+        {
+          this.$q.notify({
+          color: 'negative',
+          position: 'top',
+          message: 'Ova e-mail adresa je već u upotrebi!',
+          icon: 'warning'
+        })
+        }
+
         console.error(error);
       }
     },
