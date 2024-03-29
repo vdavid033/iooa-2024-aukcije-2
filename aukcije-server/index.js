@@ -156,3 +156,13 @@ app.get("/api/get-predmet-trenutna-cijena/:id", (req, res) => {
 app.listen(port, () => {
   console.log("Server running at port: " + port);
 });
+
+app.post("/regaKorisnika", function (request, response) {
+  const data = request.body;
+  korisnik = [[data.ime, data.prezime, data.email, data.lozinka, data.adresa]];
+  connection.query("INSERT INTO korisnik (ime_korisnika, prezime_korisnika, email_korisnika, lozinka_korisnika, adresa_korisnika) VALUES ?", [korisnik], function (error, results, fields) {
+    if (error) throw error;
+    console.log("data", data);
+    return response.send({ error: false, data: results, message: "Uspješna registracija!" });
+  });
+});
