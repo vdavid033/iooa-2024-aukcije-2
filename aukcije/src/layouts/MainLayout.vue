@@ -2,13 +2,7 @@
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar>
-          <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"/>
+          <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer"/>
         <q-toolbar-title>
           <router-link to="/" class="link-style">
             <q-avatar>
@@ -16,26 +10,11 @@
             </q-avatar>
         </router-link>
         </q-toolbar-title>
-
         <q-space></q-space>
-        <q-input
-          v-model="search"
-          filled
-          placeholder="Search"
-          dense
-          class="w-200"
-          @click="searchItems"/>
-      
-        <q-btn
-          icon="search"
-          color="primary"
-          class="q-mr-md"
-          @click="searchItems"/>
-      
-        <q-btn
-          icon="clear"
-          color="primary"
-          @click="clearSearch"/>
+
+        <q-input v-model="search" filled placeholder="Search" dense class="w-200" @click="searchItems"/>
+        <q-btn icon="search" color="primary" class="q-mr-md" @click="searchItems"/>
+        <q-btn icon="clear" color="primary" @click="clearSearch"/>
 
         <div class="q-pa-md">
           <q-btn-dropdown color="primary" :label="selectedCategory">
@@ -61,10 +40,7 @@
           </q-btn-dropdown>
         </div>
 
-        <q-btn
-          icon="refresh"
-          color="primary"
-          @click="refresh"/>
+        <q-btn icon="refresh" color="primary" @click="refresh"/>
 
         <q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space />
 
@@ -116,6 +92,13 @@
                 Moj profil
               </q-btn>
             </router-link> 
+          </div>
+          <div class="q-pa-sm col">
+            <router-link to="/admin/" class="link-style" @click="toggleLeftDrawer">
+              <q-btn class="flex flex-center" color="primary" style="width: 280px;">
+                Admin Dahsboard
+              </q-btn>
+            </router-link>
           </div>
         </div>
       </q-list>

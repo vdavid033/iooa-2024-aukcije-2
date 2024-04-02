@@ -1,3 +1,5 @@
+import Admin from "layouts/AdminLayout"
+
 const routes = [
   {
     path: "/",
@@ -12,6 +14,18 @@ const routes = [
       { path: "prijava", component: () => import("pages/Prijava_m.vue") },
       { path: "registracija", component: () => import("pages/Registracija_m.vue") },
       { path: "Moj_profil", component: () => import("pages/Moj_profil.vue") },
+      { path: "admindash", component: () => import("pages/AdminDashboard.vue") },
+      //admin layout -- spojen novi layout sa stranicom
+
+      { path: "admin/", component: () => import("layouts/AdminLayout.vue"), 
+        children:[ 
+          {path:"/", component: () => import("pages/AdminDashboard.vue")},
+          {path:"kategorije", component: () => import("pages/Kategorije.vue")},
+          {path:"racuni", component: () => import("pages/Racuni.vue")},
+
+      ]},
+
+
     ],
   },
 
