@@ -170,3 +170,19 @@ app.post("/regaKorisnika", function (request, response) {
     return response.send({ error: false, data: results, message: "Uspješna registracija!" });
   });
 });
+
+app.post('/login', function (req, res) {
+  const data = req.body;
+  const email = data.email;
+  const password = data.password;
+ 
+  connection.query("SELECT * FROM korisnik WHERE email_korisnika = ? AND lozinka_korisnika = ?", [email, password], function (err, result) {
+      if (err) {
+        res.status(500).json({ success: false, message: 'Internal server error' });
+      } else if (result.length > 0) {
+        res.status(200).json({ success: true, message: 'Prijava uspjeĹĄna!' });
+      } else {
+        res.status(401).json({ success: false, message: 'Krivi email ili lozinka!' });
+      }
+  });
+});
