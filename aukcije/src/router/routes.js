@@ -17,7 +17,12 @@ const routes = [
       { path: "admindash", component: () => import("pages/AdminDashboard.vue") },
       //admin layout -- spojen novi layout sa stranicom
 
-      { path: "admin/", component: () => import("layouts/AdminLayout.vue"), 
+      
+
+
+    ],
+  },
+  { path: "/admin/", component: () => import("layouts/AdminLayout.vue"), 
         children:[ 
           {path:"/", component: () => import("pages/AdminDashboard.vue")},
           {path:"kategorije", component: () => import("pages/Kategorije.vue")},
@@ -25,9 +30,7 @@ const routes = [
 
       ]},
 
-
-    ],
-  },
+  
 
   // Always leave this as last one,
   // but you can also remove it
