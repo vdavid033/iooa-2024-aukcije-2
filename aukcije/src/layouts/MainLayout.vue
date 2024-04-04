@@ -44,7 +44,7 @@
 
         <q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space />
 
-        <router-link to="/Prijava_m" class="link-style">
+        <router-link to="/Logout" class="link-style">
           <q-btn label="Odjava" color="negative" class="q-mr-md" />
         </router-link>
       </q-toolbar>

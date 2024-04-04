@@ -1,4 +1,5 @@
 const express = require("express");
+const session = require('express-session');
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const mysql = require("mysql");
@@ -18,6 +19,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors({ origin: "*" }));
 
+app.use(session({
+  secret: '11',
+  resave: false,
+  saveUninitialized: false,
+}));
+
+const isAuthenticated = (req, res, next) => {
+  if (req.session && req.session.user) {
+      // User is logged in, proceed to the next middleware or route handler
+      next();
+  } else {
+      // User is not logged in, redirect to login page or send an error response
+      res.status(401).json({ message: 'Unauthorized' });
+  }
+};
 const connection = mysql.createConnection({
   host: "student.veleri.hr",
   user: "iooa-aukcije",
@@ -180,9 +196,32 @@ app.post('/login', function (req, res) {
       if (err) {
         res.status(500).json({ success: false, message: 'Internal server error' });
       } else if (result.length > 0) {
+        const user = result[0];
+        req.session.id = user.id_korisnika;
+        req.session.prezime = user.prezime_korisnika;
+        req.session.ime = user.ime_korisnika;
+        req.session.email = user.email_korisnika;
+        req.session.adresa = user.adresa_korisnika;
         res.status(200).json({ success: true, message: 'Prijava uspjeĹĄna!' });
       } else {
         res.status(401).json({ success: false, message: 'Krivi email ili lozinka!' });
       }
   });
+});
+
+app.get('/logout', (req, res) => {
+  // Destroy the session
+  req.session.destroy((err) => {
+      if (err) {
+          console.error('Error destroying session:', err);
+          res.status(500).json({ message: 'Internal server error' });
+      } else {
+          res.status(200).json({ message: 'Logout successful' });
+      }
+  });
+});
+
+app.get('/Pocetna', isAuthenticated, (req, res) => {
+  // The user is authenticated, render the dashboard page
+  res.render('Pocetna');
 });
