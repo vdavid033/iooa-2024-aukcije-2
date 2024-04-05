@@ -19,7 +19,6 @@
     <div class="q-ml-sm flex flex-start q-gutter-sm">
       <div style="width: 500px">
         <q-input
-          ref="nazivPredmetaRef"
           filled
           type="text"
           label="Naziv proizvoda"
@@ -30,16 +29,15 @@
       </div>
       <div style="width: 500px">
         <q-select
-          ref="selectedCategory1Ref"
           filled
-          type="int"
           lazy-rules
           emit-value
-          v-model="selectedCategory1"
+          v-model="selectedKategorija"
           label="Kategorija"
-          :options="categories"
-          option-label="name"
+          :options="kategorije"
+          option-label="label"
           option-value="value"
+          map-options
           :rules="[
             (val) => (val !== null && val !== '') || 'Odaberite kategoriju',
           ]"
@@ -60,35 +58,15 @@
       </div>
       <div style="width: 500px">
         <q-select
-          ref="selectedCategory2Ref"
           filled
-          type="text"
-          lazy-rules
-          v-model="selectedCategory2"
-          label="Svrha"
-          :options="svrha"
-          emit-value
-          option-label="name"
-          option-value="value"
-          :rules="[
-            (val) =>
-              (val !== null && val !== '') ||
-              'Odaberite humanitarnu svrhu aukcije',
-          ]"
-        />
-      </div>
-      <div style="width: 500px">
-        <q-select
-          ref="selectedCategory3Ref"
-          filled
-          type="integer"
           lazy-rules
           emit-value
-          v-model="selectedCategory3"
+          v-model="selectedKorisnik"
           label="Korisnik"
           :options="korisnik"
-          option-label="name"
+          option-label="label"
           option-value="value"
+          map-options
           :rules="[
             (val) => (val !== null && val !== '') || 'Odaberite korisnika',
           ]"
@@ -230,130 +208,126 @@
   </q-card>
 </template>
 <script>
-import imageCompression from "browser-image-compression";
-import axios from "axios";
+  import imageCompression from "browser-image-compression";
+  import axios from "axios";
 
-export default {
-  data() {
-    return {
-      sifra_predmeta: null,
-      naziv_predmeta: "",
-      opis_predmeta: "",
-      selectedCategory1: null,
-      selectedCategory2: null,
-      selectedCategory3: null,
-      pocetna_cijena: "",
-      slika: null,
-      file: null,
-      base64Image: null,
-      base64Text: null,
-      imageUrl: "",
-      showDialog: false,
-      vrijemePocetka: null,
-      vrijemeZavrsetka: null,
+  export default {
+    data() {
+      return {
+        sifra_predmeta: null,
+        naziv_predmeta: "",
+        opis_predmeta: "",
+        selectedKategorija: null,
+        selectedKorisnik: null,
+        pocetna_cijena: "",
+        slika: null,
+        file: null,
+        base64Image: null,
+        base64Text: null,
+        imageUrl: "",
+        showDialog: false,
+        vrijemePocetka: null,
+        vrijemeZavrsetka: null,
 
-      categories: [
-        { name: "Namjestaj", value: "1" },
-        { name: "Automobili", value: "2" },
-        { name: "Nakit", value: "3" },
-        { name: "Ostalo", value: "4" },
-      ],
-      svrha: [
-        { name: "Za osobe pogođene potresom", value: "Potres" },
-        { name: "Za osobe pogođene poplavom", value: "Poplava" },
-        { name: "Za osobe pogođene požarom", value: "Požar" },
-        { name: "Ostalo", value: "ostalo" },
-      ],
-      korisnik: [
-        { name: "Masimo", value: "1" },
-        { name: "Emil", value: "2" },
-        { name: "Dorijan", value: "3" },
-        { name: "Dario", value: "4" },
-      ],
-    };
-  },
-  methods: {
-    async onFileChange(e) {
-      this.file = e.target.files[0];
-      await this.convertImage();
-    },
-    async convertImage() {
-      if (!this.file && !this.imageUrl) {
-        return alert("Molimo odaberite sliku ili unesite URL slike.");
-      }
-
-      const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true,
+        kategorije: [],
+        korisnik: [],
       };
-
-      try {
-        let compressedFile;
-
-        if (this.imageUrl) {
-          const response = await fetch(this.imageUrl);
-          const blob = await response.blob();
-          compressedFile = await imageCompression(blob, options);
-        } else {
-          compressedFile = await imageCompression(this.file, options);
+    },
+    methods: {
+      async onFileChange(e) {
+        this.file = e.target.files[0];
+        await this.convertImage();
+      },
+      async convertImage() {
+        if (!this.file && !this.imageUrl) {
+          return alert("Molimo odaberite sliku ili unesite URL slike.");
         }
 
-        const reader = new FileReader();
-        reader.readAsDataURL(compressedFile);
-        reader.onload = () => {
-          this.base64Image = reader.result;
-          this.base64Text = reader.result.replace(
-            /^data:image\/[a-z]+;base64,/,
-            ""
-          );
-          this.slika = "data:image/jpg;base64," + this.base64Text;
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
         };
-        reader.onerror = (error) => {
+
+        try {
+          let compressedFile;
+
+          if (this.imageUrl) {
+            const response = await fetch(this.imageUrl);
+            const blob = await response.blob();
+            compressedFile = await imageCompression(blob, options);
+          } else {
+            compressedFile = await imageCompression(this.file, options);
+          }
+
+          const reader = new FileReader();
+          reader.readAsDataURL(compressedFile);
+          reader.onload = () => {
+            this.base64Image = reader.result;
+            this.base64Text = reader.result.replace(
+              /^data:image\/[a-z]+;base64,/,
+              ""
+            );
+            this.slika = "data:image/jpg;base64," + this.base64Text;
+          };
+          reader.onerror = (error) => {
+            console.error(error);
+          };
+        } catch (error) {
           console.error(error);
+          return alert("Došlo je do pogreške prilikom kompresije slike.");
+        }
+      },
+
+      closeAndReload() {
+        this.showDialog = false;
+        window.location.reload();
+      },
+
+      async submitForm() {
+        const sampleData = {
+          id_predmeta: this.sifra_predmeta,
+          naziv_predmeta: this.naziv_predmeta,
+          opis_predmeta: this.opis_predmeta,
+          slika: this.slika,
+          vrijeme_pocetka: this.vrijemePocetka,
+          vrijeme_zavrsetka: this.vrijemeZavrsetka,
+          pocetna_cijena: this.pocetna_cijena,
+          id_korisnika: this.selectedKorisnik,
+          id_kategorije: this.selectedKategorija,
         };
-      } catch (error) {
-        console.error(error);
-        return alert("Došlo je do pogreške prilikom kompresije slike.");
-      }
-    },
 
-    closeAndReload() {
-      this.showDialog = false;
-      window.location.reload();
+        try {
+          const response = await axios.post(
+            "http://localhost:3000/unosPredmeta",
+            sampleData
+          );
+          console.log(response.data);
+          this.showDialog = true;
+        } catch (error) {
+          console.error(error);
+        }
+      },
     },
+    mounted() {
+      const now = new Date();
+      now.setHours(now.getHours() + 2);
+      this.vrijemePocetka = now.toISOString().slice(0, 16);
+      this.vrijemeZavrsetka = this.vrijemePocetka;
 
-    async submitForm() {
-      const sampleData = {
-        sifra_predmeta: this.sifra_predmeta,
-        naziv_predmeta: this.naziv_predmeta,
-        opis_predmeta: this.opis_predmeta,
-        slika: this.slika,
-        vrijeme_pocetka: this.vrijemePocetka,
-        vrijeme_zavrsetka: this.vrijemeZavrsetka,
-        pocetna_cijena: this.pocetna_cijena,
-        svrha_donacije: this.selectedCategory2,
-        id_korisnika: this.selectedCategory3,
-        sifra_kategorije: this.selectedCategory1,
-      };
-
-      try {
-        const response = await axios.post(
-          "http://localhost:3000/unosPredmeta",
-          sampleData
-        );
-        console.log(response.data);
-        this.showDialog = true;
-      } catch (error) {
-        console.error(error);
-      }
+      axios.get("http://localhost:3000/getUnosPredmeta").then((response) => {
+        this.kategorije = response.data.kategorije.map(kategorija => ({
+          label: kategorija.naziv_kategorije,
+          value: kategorija.id_kategorije
+        }));
+        this.korisnik = response.data.korisnici.map(korisnici => ({
+          label: korisnici.ime_korisnika,
+          value: korisnici.id_korisnika
+        }));
+      }).catch(error => {
+        console.error("Error fetching data:", error);
+      });
     },
-  },
-  mounted() {
-    const now = new Date();
-    now.setHours(now.getHours() + 2);
-    this.vrijemePocetka = now.toISOString().slice(0, 16);
-    this.vrijemeZavrsetka = this.vrijemePocetka;
-  },
-};
+  };
 </script>
+

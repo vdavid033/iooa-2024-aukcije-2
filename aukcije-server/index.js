@@ -39,6 +39,22 @@ app.get("/api/all-korisnik", (req, res) => {
   });
 });
 
+
+app.get("/getUnosPredmeta", function (request, response) {
+  connection.query("SELECT * FROM korisnik", function (error, korisniciResults) {
+    if (error) throw error;
+
+    connection.query("SELECT * FROM kategorija", function (error, kategorijeResults) {
+      if (error) throw error;
+
+      response.send({
+        korisnici: korisniciResults,
+        kategorije: kategorijeResults
+      });
+    });
+  });
+})
+
 app.post("/unosPredmeta", function (request, response) {
   const data = request.body;
   predmet = [[data.id_predmeta, data.naziv_predmeta, data.opis_predmeta, data.vrijeme_pocetka, data.vrijeme_zavrsetka, data.pocetna_cijena, data.id_korisnika, data.id_kategorije]];
