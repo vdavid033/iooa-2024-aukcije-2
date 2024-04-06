@@ -53,11 +53,19 @@ app.get("/getUnosPredmeta", function (request, response) {
 
 app.post("/unosPredmeta", function (request, response) {
   const data = request.body;
-  predmet = [[data.id_predmeta, data.naziv_predmeta, data.opis_predmeta, data.vrijeme_pocetka, data.vrijeme_zavrsetka, data.pocetna_cijena, data.id_korisnika, data.id_kategorije]];
-  connection.query("INSERT INTO predmet (id_predmeta, naziv_predmeta,  opis_predmeta, vrijeme_pocetka, vrijeme_zavrsetka, pocetna_cijena, id_korisnika, id_kategorije) VALUES ?", [predmet], function (error, results, fields) {
+  const predmet = [[data.naziv_predmeta, data.opis_predmeta, data.vrijeme_pocetka, data.vrijeme_zavrsetka, data.pocetna_cijena, data.id_korisnika, data.id_kategorije]];
+  
+  connection.query("INSERT INTO predmet (naziv_predmeta, opis_predmeta, vrijeme_pocetka, vrijeme_zavrsetka, pocetna_cijena, id_korisnika, id_kategorije) VALUES ?", [predmet], function (error, results, fields) {
     if (error) throw error;
-    console.log("data", data);
-    return response.send({ error: false, data: results, message: "Predmet je dodan." });
+    //console.log("Predmet data", data);
+    const insertedPredmetId = results.insertId;
+    //console.log("Inserted Predmet ID:", insertedPredmetId);
+
+    connection.query("INSERT INTO slika (slika, id_predmeta) VALUES (?, ?)", [data.slika, insertedPredmetId], function (error, results, fields) {
+      if (error) throw error;
+      //console.log("Slika data", data);
+      return response.send({ error: false, data: results, message: "Predmet i slika su dodani." });
+    });
   });
 });
 
