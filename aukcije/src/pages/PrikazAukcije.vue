@@ -32,9 +32,14 @@
     <div class="q-pa-sm col flex flex-start q-gutter-sm">
       <div class="row flex flex-center">
         <div style="width: 600px">
-          <q-card>
-            <q-img :src="item.slika" no-native-menu />
-          </q-card>
+          <q-card-section class="q-pt-none">
+            <q-carousel v-if="item.slike && item.slike.length > 0 && !showSingleImage" control-type="flat" navigation="true" style="height: 400px">
+              <q-carousel-slide v-for="(image, index) in item.slike" :key="index">
+                <q-img :src="'data:image/jpeg;base64,' + image" />
+              </q-carousel-slide>
+            </q-carousel>
+            <q-img v-else-if="item.slika && showSingleImage" :src="'data:image/jpeg;base64,' + item.slika" no-native-menu />
+          </q-card-section>
         </div>
       </div>
       <div class="q-ml-sm col flex flex-start q-gutter-sm">
@@ -121,16 +126,23 @@ export default {
         id_korisnika: null,
         id_predmeta: null,
       },
+      slike: [],
+      showSingleImage: false,
     };
   },
   mounted() {
+    axios.get(baseUrl + "get-predmet-trenutna-cijena/" + this.id_predmeta, {}).then((response) => {
+      this.item = response.data[0];
+    });
+
     axios.get(baseUrl + "get-predmet/" + this.id_predmeta, {}).then((response) => {
       this.item = response.data[0];
       this.potvrdjenaCijena = this.item.pocetna_cijena;
-    });
-
-    axios.get(baseUrl + "get-predmet-trenutna-cijena/" + this.id_predmeta, {}).then((response) => {
-      this.item = response.data[0];
+      if (Array.isArray(this.item.slike)) {
+        this.item.slike = this.item.slike.map((image) => image.slika_base64);
+      }
+      // Set showSingleImage to true if there's only one image
+      this.showSingleImage = !!(this.item.slika && !this.item.slike);
     });
   },
 

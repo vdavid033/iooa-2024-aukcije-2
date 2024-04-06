@@ -1,5 +1,5 @@
 const express = require("express");
-const session = require('express-session');
+const session = require("express-session");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const mysql = require("mysql");
@@ -19,9 +19,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors({ origin: "*" }));
 
-
-
-
 const connection = mysql.createConnection({
   host: "student.veleri.hr",
   user: "iooa-aukcije",
@@ -39,7 +36,6 @@ app.get("/api/all-korisnik", (req, res) => {
   });
 });
 
-
 app.get("/getUnosPredmeta", function (request, response) {
   connection.query("SELECT * FROM korisnik", function (error, korisniciResults) {
     if (error) throw error;
@@ -49,11 +45,11 @@ app.get("/getUnosPredmeta", function (request, response) {
 
       response.send({
         korisnici: korisniciResults,
-        kategorije: kategorijeResults
+        kategorije: kategorijeResults,
       });
     });
   });
-})
+});
 
 app.post("/unosPredmeta", function (request, response) {
   const data = request.body;
@@ -69,6 +65,13 @@ app.get("/api/all-predmet", (req, res) => {
   connection.query("SELECT p.id_predmeta, p.opis_predmeta, p.naziv_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, CONCAT( FLOOR(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) / (24*3600)), ' dana, ', TIME_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) % (24*3600)), '%H:%i:%s') ) AS preostalo_vrijeme, s.slika FROM predmet p LEFT JOIN slika s ON p.id_predmeta = s.id_predmeta WHERE p.vrijeme_zavrsetka > NOW() ORDER BY preostalo_vrijeme DESC;", (error, results) => {
     if (error) throw error;
 
+    // Convert blob data to Base64
+    results.forEach((result) => {
+      if (result.slika) {
+        result.slika = result.slika.toString("base64");
+      }
+    });
+
     res.send(results);
   });
 });
@@ -76,11 +79,31 @@ app.get("/api/all-predmet", (req, res) => {
 app.get("/api/get-predmet/:id", (req, res) => {
   const { id } = req.params;
 
-  connection.query("SELECT p.naziv_predmeta, p.id_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, TIME_FORMAT( SEC_TO_TIME(TIMESTAMPDIFF(SECOND, p.vrijeme_pocetka, p.vrijeme_zavrsetka)), '%H:%i:%s' ) AS preostalo_vrijeme, p.opis_predmeta, COALESCE(MAX(po.vrijednost_ponude), p.pocetna_cijena) AS vrijednost_ponude FROM predmet p LEFT JOIN ponuda po ON p.id_predmeta = po.id_predmeta WHERE p.id_predmeta = ?", [id], (error, results) => {
-    if (error) throw error;
-    res.send(results);
-  });
+  connection.query(
+    `SELECT p.naziv_predmeta, p.id_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, TIME_FORMAT( SEC_TO_TIME(TIMESTAMPDIFF(SECOND, p.vrijeme_pocetka, p.vrijeme_zavrsetka)), '%H:%i:%s' ) AS preostalo_vrijeme, p.opis_predmeta, COALESCE(MAX(po.vrijednost_ponude), p.pocetna_cijena) AS vrijednost_ponude, s.slika 
+    FROM predmet p 
+    LEFT JOIN ponuda po ON p.id_predmeta = po.id_predmeta 
+    LEFT JOIN slika s ON p.id_predmeta = s.id_predmeta 
+    WHERE p.id_predmeta = ? 
+    GROUP BY p.id_predmeta`,
+    [id],
+    (error, results) => {
+      if (error) throw error;
+
+      if (results.length > 0) {
+        // Convert each image data to Base64
+        results.forEach((result) => {
+          if (result.slika) {
+            result.slika = result.slika.toString("base64");
+          }
+        });
+      }
+
+      res.send(results);
+    }
+  );
 });
+
 app.get("/api/get-kategorija-predmet/:id", (req, res) => {
   const { id } = req.params;
 
@@ -183,7 +206,7 @@ app.post("/regaKorisnika", function (request, response) {
 
   connection.query("INSERT INTO korisnik (ime_korisnika, prezime_korisnika, email_korisnika, lozinka_korisnika, adresa_korisnika) VALUES ?", [korisnik], function (error, results, fields) {
     if (error) {
-      console.error('Registracija korisnika neuspješna.', error);
+      console.error("Registracija korisnika neuspješna.", error);
       return response.status(500).json({ error: true, message: "Registracija korisnika neuspješna." });
     }
     console.log("data", data);
@@ -191,32 +214,30 @@ app.post("/regaKorisnika", function (request, response) {
   });
 });
 
-app.post('/login', function (req, res) {
+app.post("/login", function (req, res) {
   const data = req.body;
   const email = data.email;
   const password = data.password;
- 
+
   connection.query("SELECT * FROM korisnik WHERE email_korisnika = ? AND lozinka_korisnika = ?", [email, password], function (err, result) {
-      if (err) {
-        res.status(500).json({ success: false, message: 'Internal server error' });
-      } else if (result.length > 0) {
-        res.status(200).json({ success: true, message: 'Prijava uspjeĹĄna!' });
-      } else {
-        res.status(401).json({ success: false, message: 'Krivi email ili lozinka!' });
-      }
+    if (err) {
+      res.status(500).json({ success: false, message: "Internal server error" });
+    } else if (result.length > 0) {
+      res.status(200).json({ success: true, message: "Prijava uspjeĹĄna!" });
+    } else {
+      res.status(401).json({ success: false, message: "Krivi email ili lozinka!" });
+    }
   });
 });
 
-app.get('/logout', (req, res) => {
+app.get("/logout", (req, res) => {
   // Destroy the session
   req.session.destroy((err) => {
-      if (err) {
-          console.error('Error destroying session:', err);
-          res.status(500).json({ message: 'Internal server error' });
-      } else {
-          res.status(200).json({ message: 'Logout successful' });
-      }
+    if (err) {
+      console.error("Error destroying session:", err);
+      res.status(500).json({ message: "Internal server error" });
+    } else {
+      res.status(200).json({ message: "Logout successful" });
+    }
   });
 });
-
-
