@@ -1,8 +1,12 @@
 <template>
+  <div class="row justify-center q-pa-md">
+    <q-input v-model="Pretrazivanje" filled placeholder="Pretraži aukcije" dense class="q-input--width"/>
+  </div>
+  <q-separator class = "separator" />
   <q-item class="q-pa-sm text-bold text-blue-7" style="font-size: 30px"></q-item>
   <div class="q-pa-sm row flex flex-center">
     <div
-        v-for="item in items"
+        v-for="item in filteredItems"
         :key="item.id_predmeta"
         class="q-pa-md"
         style="width: 400px">
@@ -33,7 +37,13 @@
       id_kategorije() {
         return this.$route.query.id_kategorije;
       },
-    },
+      filteredItems() {
+        if (!this.Pretrazivanje) return this.items;
+        return this.items.filter(item =>
+          item.naziv_predmeta.toLowerCase().includes(this.Pretrazivanje.toLowerCase())
+        );
+      },
+   },
 
     setup() {
       return {
@@ -47,6 +57,7 @@
 
     data() {
       return {
+        Pretrazivanje: '',
         items:[],
       };
     },
@@ -78,5 +89,13 @@
   .q-img {
     height: 300px;
     max-width: 500px;
+  }
+
+  .q-input--width {
+    width: 500px;
+  }
+  
+  .separator {
+    background-color: #1976d2;
   }
 </style>

@@ -11,40 +11,9 @@
         </router-link>
         </q-toolbar-title>
         <q-space></q-space>
-
-        <q-input v-model="search" filled placeholder="Search" dense class="w-200" @click="searchItems"/>
-        <q-btn icon="search" color="primary" class="q-mr-md" @click="searchItems"/>
-        <q-btn icon="clear" color="primary" @click="clearSearch"/>
-
-        <div class="q-pa-md">
-          <q-btn-dropdown color="primary" :label="selectedCategory">
-            <q-list>
-              <q-item clickable v-close-popup @click="onItemClick('Photos')">
-                <q-item-section>
-                  <q-item-label>Kategorija 1</q-item-label>
-                </q-item-section>
-              </q-item>
-          
-              <q-item clickable v-close-popup @click="onItemClick('Videos')">
-                <q-item-section>
-                  <q-item-label>Kategorija 2</q-item-label>
-                </q-item-section>
-              </q-item>
-          
-              <q-item clickable v-close-popup @click="onItemClick('Articles')">
-                <q-item-section>
-                  <q-item-label>Kategorija 3</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-btn-dropdown>
-        </div>
-
-        <q-btn icon="refresh" color="primary" @click="refresh"/>
-
         <q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space />
 
-        <router-link to="/Prijava_m" class="link-style">
+        <router-link to="/Logout" class="link-style">
           <q-btn label="Odjava" color="negative" class="q-mr-md" />
         </router-link>
       </q-toolbar>

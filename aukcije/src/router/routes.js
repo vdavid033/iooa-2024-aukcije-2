@@ -12,13 +12,19 @@ const routes = [
       { path: "kategorija", component: () => import("pages/PrikazPredmetaKategorije.vue") },
       { path: "konverter", component: () => import("pages/konverter.vue") },
       { path: "prijava", component: () => import("pages/Prijava_m.vue") },
+      { path: "Logout", component: () => import("pages/Logout.vue") },
       { path: "registracija", component: () => import("pages/Registracija_m.vue") },
       { path: "Moj_profil", component: () => import("pages/Moj_profil.vue") },
       { path: "admindash", component: () => import("pages/AdminDashboard.vue") },
       //admin layout -- spojen novi layout sa stranicom
       { path: "pregledkorisnika", component: () => import("pages/PregledKorisnika.vue") },
 
-      { path: "admin/", component: () => import("layouts/AdminLayout.vue"), 
+      
+
+
+    ],
+  },
+  { path: "/admin/", component: () => import("layouts/AdminLayout.vue"), 
         children:[ 
           {path:"/", component: () => import("pages/AdminDashboard.vue")},
           {path:"kategorije", component: () => import("pages/Kategorije.vue")},
@@ -26,9 +32,7 @@ const routes = [
 
       ]},
 
-
-    ],
-  },
+  
 
   // Always leave this as last one,
   // but you can also remove it

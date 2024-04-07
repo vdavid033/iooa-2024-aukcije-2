@@ -23,21 +23,21 @@
                 Polja
             </q-item-label>
             <!-- veze za druge stranice podlayouta-->
-            <div class="q-pa-sm-col">
+            <div class="q-pa-sm col">
                 <router-link to="kategorije" class="link-style" @click="toggleLeftDrawerClose">
                     <q-btn class="flex flex-center" color="positive" style="width: 280px">
                         Kategorije
                     </q-btn>
                 </router-link>
             </div>
-            <div class="q-pa-sm-col">
+            <div class="q-pa-sm col">
                 <router-link to="racuni" class="link-style" @click="toggleLeftDrawerClose">
                     <q-btn class="flex flex-center" color="positive" style="width: 280px">
                         Računi
                     </q-btn>
                 </router-link>
             </div>
-            <div class="q-pa-sm-col">
+            <div class="q-pa-sm col">
                 <router-link to="/" class="link-style" @click="toggleLeftDrawerClose">
                     <q-btn class="flex flex-center" color="negative" style="width: 280px">
                     Izlazak
