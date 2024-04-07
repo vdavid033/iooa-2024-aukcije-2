@@ -38,6 +38,13 @@
                 </router-link>
             </div>
             <div class="q-pa-sm col">
+                <router-link to="pregledkorisnika" class="link-style" @click="toggleLeftDrawerClose">
+                    <q-btn class="flex flex-center" color="positive" style="width: 280px">
+                        Pregled korisnika
+                    </q-btn>
+                </router-link>
+            </div>
+            <div class="q-pa-sm col">
                 <router-link to="/" class="link-style" @click="toggleLeftDrawerClose">
                     <q-btn class="flex flex-center" color="negative" style="width: 280px">
                     Izlazak

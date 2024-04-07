@@ -29,7 +29,7 @@ const routes = [
           {path:"/", component: () => import("pages/AdminDashboard.vue")},
           {path:"kategorije", component: () => import("pages/Kategorije.vue")},
           {path:"racuni", component: () => import("pages/Racuni.vue")},
-
+          {path:"pregledkorisnika", component: () => import("pages/PregledKorisnika.vue")},
       ]},
 
   
