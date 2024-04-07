@@ -27,8 +27,8 @@ const connection = mysql.createConnection({
 
 connection.connect();
 
-app.get("/api/all-korisnik", (req, res) => {
-  connection.query("SELECT * FROM korisnik", (error, results) => {
+app.get("/api/korisnici", (req, res) => {
+  connection.query("SELECT id_korisnika, ime_korisnika, prezime_korisnika, email_korisnika, adresa_korisnika FROM korisnik", (error, results) => {
     if (error) throw error;
 
     res.send(results);
@@ -72,13 +72,6 @@ app.get("/api/get-kategorija-predmet/:id", (req, res) => {
 app.get("/api/all-kategorija", (req, res) => {
   connection.query("SELECT * FROM kategorija", (error, results) => {
     if (error) throw error;
-    res.send(results);
-  });
-});
-app.get("/api/all-korisnik", (req, res) => {
-  connection.query("SELECT * FROM korisnik", (error, results) => {
-    if (error) throw error;
-
     res.send(results);
   });
 });
@@ -127,13 +120,6 @@ app.post("/api/unos-slike", function (req, res) {
       data: results,
       message: "Slika je dodana.",
     });
-  });
-});
-app.get("/api/all-korisnik", (req, res) => {
-  connection.query("SELECT * FROM korisnik", (error, results) => {
-    if (error) throw error;
-
-    res.send(results);
   });
 });
 
