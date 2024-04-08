@@ -47,14 +47,15 @@
         <q-input
           ref="pocetnaCijenaRef"
           filled
-          type="double"
+          type="number"
           label="Početna cijena proizvoda"
           v-model="pocetna_cijena"
           lazy-rules
           :rules="[
-            (val) => (val !== null && val !== '') || 'Unesite početnu cijenu',
+            (val) => (val !== null && val !== '') || 'Unesite početnu cijenu (brojevi)',
           ]"
-        />
+        >
+        </q-input>
       </div>
       <div style="width: 500px">
         <q-select
@@ -78,12 +79,8 @@
         <q-input filled v-model="vrijemePocetka" label="Datum i vrijeme početka aukcije">
           <template v-slot:prepend>
             <q-icon name="event" class="cursor-pointer">
-              <q-popup-proxy
-                cover
-                transition-show="scale"
-                transition-hide="scale"
-              >
-                <q-date v-model="date" mask="YYYY-MM-DD HH:mm" ref="datePicker">
+              <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                <q-date v-model="vrijemePocetka" mask="YYYY-MM-DD HH:mm">
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -94,12 +91,8 @@
 
           <template v-slot:append>
             <q-icon name="access_time" class="cursor-pointer">
-              <q-popup-proxy
-                cover
-                transition-show="scale"
-                transition-hide="scale"
-              >
-                <q-time v-model="date" mask="YYYY-MM-DD HH:mm" format24h>
+              <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                <q-time v-model="vrijemePocetka" mask="YYYY-MM-DD HH:mm" format24h>
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -109,20 +102,13 @@
           </template>
         </q-input>
       </div>
+
       <div style="width: 300px">
-        <q-input
-          filled
-          v-model="vrijemeZavrsetka"
-          label="Datum i vrijeme završetka aukcije"
-        >
+        <q-input filled v-model="vrijemeZavrsetka" label="Datum i vrijeme završetka aukcije">
           <template v-slot:prepend>
             <q-icon name="event" class="cursor-pointer">
-              <q-popup-proxy
-                cover
-                transition-show="scale"
-                transition-hide="scale"
-              >
-                <q-date v-model="date2" mask="YYYY-MM-DD HH:mm" ref="datePicker">
+              <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                <q-date v-model="vrijemeZavrsetka" mask="YYYY-MM-DD HH:mm">
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -133,12 +119,8 @@
 
           <template v-slot:append>
             <q-icon name="access_time" class="cursor-pointer">
-              <q-popup-proxy
-                cover
-                transition-show="scale"
-                transition-hide="scale"
-              >
-                <q-time v-model="date2" mask="YYYY-MM-DD HH:mm" format24h>
+              <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                <q-time v-model="date_zavrsetak" mask="YYYY-MM-DD HH:mm" format24h>
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -163,7 +145,7 @@
     </div>
 
     <div>
-      <input type="file" @change="onFileChange" />
+      <input type="file" accept="image/*" @change="onFileChange" />
 
       <q-btn @click="convertImage">Spremi sliku</q-btn>
       <q-separator></q-separator>
@@ -233,6 +215,7 @@
         korisnik: [],
       };
     },
+
     methods: {
       async onFileChange(e) {
         this.file = e.target.files[0];
@@ -285,6 +268,15 @@
       },
 
       async submitForm() {
+        if (!this.file) {
+          this.$q.notify({
+          color: 'negative',
+          position: 'top',
+          message: 'Molimo odaberite sliku.',
+          icon: 'warning'
+          });
+          return;
+        }
         const sampleData = {
           id_predmeta: this.sifra_predmeta,
           naziv_predmeta: this.naziv_predmeta,
