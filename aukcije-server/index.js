@@ -1,5 +1,6 @@
 const express = require("express");
 const session = require("express-session");
+const bcrypt = require('bcrypt');
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const mysql = require("mysql");
@@ -193,18 +194,26 @@ app.get("/api/get-predmet-trenutna-cijena/:id", (req, res) => {
 app.listen(port, () => {
   console.log("Server running at port: " + port);
 });
-
 app.post("/regaKorisnika", function (request, response) {
   const data = request.body;
-  korisnik = [[data.ime, data.prezime, data.email, data.lozinka, data.adresa]];
+  const saltRounds = 10;
 
-  connection.query("INSERT INTO korisnik (ime_korisnika, prezime_korisnika, email_korisnika, lozinka_korisnika, adresa_korisnika) VALUES ?", [korisnik], function (error, results, fields) {
-    if (error) {
-      console.error("Registracija korisnika neuspješna.", error);
-      return response.status(500).json({ error: true, message: "Registracija korisnika neuspješna." });
+  bcrypt.hash(data.lozinka, saltRounds, function(err, hash) {
+    if (err) {
+      console.error("Error hashing password:", err);
+      return response.status(500).json({ error: true, message: "Error hashing password." });
     }
-    console.log("data", data);
-    return response.send({ error: false, data: results, message: "Uspješna registracija!" });
+
+    const korisnik = [[data.ime, data.prezime, data.email, hash, data.adresa]];
+
+    connection.query("INSERT INTO korisnik (ime_korisnika, prezime_korisnika, email_korisnika, lozinka_korisnika, adresa_korisnika) VALUES ?", [korisnik], function (error, results, fields) {
+      if (error) {
+        console.error("Registracija korisnika neuspješna.", error);
+        return response.status(500).json({ error: true, message: "Registracija korisnika neuspješna." });
+      }
+      console.log("data", data);
+      return response.send({ error: false, data: results, message: "Uspješna registracija!" });
+    });
   });
 });
 
@@ -213,11 +222,18 @@ app.post("/login", function (req, res) {
   const email = data.email;
   const password = data.password;
 
-  connection.query("SELECT * FROM korisnik WHERE email_korisnika = ? AND lozinka_korisnika = ?", [email, password], function (err, result) {
+  connection.query("SELECT * FROM korisnik WHERE email_korisnika = ?", [email], function (err, result) {
     if (err) {
       res.status(500).json({ success: false, message: "Internal server error" });
     } else if (result.length > 0) {
-      res.status(200).json({ success: true, message: "Prijava uspjeĹĄna!" });
+      // Usporedba lozinki
+      bcrypt.compare(password, result[0].lozinka_korisnika, function(err, bcryptRes) {
+        if (bcryptRes) {
+          res.status(200).json({ success: true, message: "Prijava uspješna!" });
+        } else {
+          res.status(401).json({ success: false, message: "Krivi email ili lozinka!" });
+        }
+      });
     } else {
       res.status(401).json({ success: false, message: "Krivi email ili lozinka!" });
     }
