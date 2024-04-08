@@ -19,7 +19,7 @@
     <div class="q-pa-sm row flex flex-center">
       <div v-for="item in filteredItems" :key="item.id_predmeta" class="q-pa-md" style="width: 400px">
         <q-card @click="navigateToItem(item.id_predmeta)">
-          <q-img v-if="item.slika" :src="'data:image/jpeg;base64,' + item.slika" no-native-menu />
+          <q-img v-if="item.slika" :src="item.slika" no-native-menu />
           <q-item-section>
             <q-item class="q-pa-sm text-bold text-blue-7">{{ item.naziv_predmeta }} </q-item>
             <q-item>Početna cijena: {{ item.pocetna_cijena }}$</q-item>
@@ -62,7 +62,21 @@ export default {
   computed: {
     filteredItems() {
       if (!this.Pretrazivanje) return this.items;
-      return this.items.filter((item) => item.naziv_predmeta.toLowerCase().includes(this.Pretrazivanje.toLowerCase()));
+
+      // Create a map to store unique attractions
+      const uniqueItemsMap = new Map();
+
+      // Filter items based on search query and ensure uniqueness
+      this.items.forEach((item) => {
+        // Check if the attraction is already in the map
+        if (!uniqueItemsMap.has(item.id_predmeta) && item.naziv_predmeta.toLowerCase().includes(this.Pretrazivanje.toLowerCase())) {
+          // If not, add it to the map
+          uniqueItemsMap.set(item.id_predmeta, item);
+        }
+      });
+
+      // Convert map values back to array
+      return Array.from(uniqueItemsMap.values());
     },
   },
 

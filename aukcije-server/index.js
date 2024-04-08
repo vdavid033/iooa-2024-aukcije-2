@@ -1,6 +1,6 @@
 const express = require("express");
 const session = require("express-session");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const mysql = require("mysql");
@@ -55,7 +55,7 @@ app.get("/getUnosPredmeta", function (request, response) {
 app.post("/unosPredmeta", function (request, response) {
   const data = request.body;
   const predmet = [[data.naziv_predmeta, data.opis_predmeta, data.vrijeme_pocetka, data.vrijeme_zavrsetka, data.pocetna_cijena, data.id_korisnika, data.id_kategorije]];
-  
+
   connection.query("INSERT INTO predmet (naziv_predmeta, opis_predmeta, vrijeme_pocetka, vrijeme_zavrsetka, pocetna_cijena, id_korisnika, id_kategorije) VALUES ?", [predmet], function (error, results, fields) {
     if (error) throw error;
     //console.log("Predmet data", data);
@@ -71,16 +71,8 @@ app.post("/unosPredmeta", function (request, response) {
 });
 
 app.get("/api/all-predmet", (req, res) => {
-  connection.query("SELECT p.id_predmeta, p.opis_predmeta, p.naziv_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, CONCAT( FLOOR(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) / (24*3600)), ' dana, ', TIME_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) % (24*3600)), '%H:%i:%s') ) AS preostalo_vrijeme, s.slika FROM predmet p LEFT JOIN slika s ON p.id_predmeta = s.id_predmeta WHERE p.vrijeme_zavrsetka > NOW() ORDER BY preostalo_vrijeme DESC;", (error, results) => {
+  connection.query("SELECT p.id_predmeta, p.opis_predmeta, p.naziv_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, CONCAT( FLOOR(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) / (24*3600)), ' dana, ', TIME_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) % (24*3600)), '%H:%i:%s') ) AS preostalo_vrijeme, (SELECT slika FROM slika WHERE id_predmeta = p.id_predmeta LIMIT 1) AS slika FROM predmet p WHERE p.vrijeme_zavrsetka > NOW() ORDER BY preostalo_vrijeme DESC;", (error, results) => {
     if (error) throw error;
-
-    // Convert blob data to Base64
-    results.forEach((result) => {
-      if (result.slika) {
-        result.slika = result.slika.toString("base64");
-      }
-    });
-
     res.send(results);
   });
 });
@@ -98,16 +90,6 @@ app.get("/api/get-predmet/:id", (req, res) => {
     [id],
     (error, results) => {
       if (error) throw error;
-
-      if (results.length > 0) {
-        // Convert each image data to Base64
-        results.forEach((result) => {
-          if (result.slika) {
-            result.slika = result.slika.toString("base64");
-          }
-        });
-      }
-
       res.send(results);
     }
   );
@@ -116,11 +98,32 @@ app.get("/api/get-predmet/:id", (req, res) => {
 app.get("/api/get-kategorija-predmet/:id", (req, res) => {
   const { id } = req.params;
 
-  connection.query("SELECT id_predmeta, naziv_predmeta, pocetna_cijena, vrijeme_zavrsetka, TIME_FORMAT( SEC_TO_TIME(TIMESTAMPDIFF(SECOND, NOW(), vrijeme_zavrsetka)), '%H:%i:%s' ) AS preostalo_vrijeme, opis_predmeta FROM predmet WHERE id_kategorije = ?", [id], (error, results) => {
-    if (error) throw error;
-    res.send(results);
-  });
+  connection.query(
+    `
+    SELECT 
+      p.id_predmeta, 
+      p.naziv_predmeta, 
+      p.pocetna_cijena, 
+      p.vrijeme_zavrsetka, 
+      TIME_FORMAT( SEC_TO_TIME(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka)), '%H:%i:%s' ) AS preostalo_vrijeme, 
+      p.opis_predmeta,
+      (SELECT slika FROM slika WHERE id_predmeta = p.id_predmeta LIMIT 1) AS slika
+    FROM 
+      predmet p 
+    WHERE 
+      p.id_kategorije = ? AND
+      p.vrijeme_zavrsetka > NOW()
+    ORDER BY 
+      preostalo_vrijeme DESC;
+  `,
+    [id],
+    (error, results) => {
+      if (error) throw error;
+      res.send(results);
+    }
+  );
 });
+
 app.get("/api/all-kategorija", (req, res) => {
   connection.query("SELECT * FROM kategorija", (error, results) => {
     if (error) throw error;
@@ -198,7 +201,7 @@ app.post("/regaKorisnika", function (request, response) {
   const data = request.body;
   const saltRounds = 10;
 
-  bcrypt.hash(data.lozinka, saltRounds, function(err, hash) {
+  bcrypt.hash(data.lozinka, saltRounds, function (err, hash) {
     if (err) {
       console.error("Error hashing password:", err);
       return response.status(500).json({ error: true, message: "Error hashing password." });
@@ -227,7 +230,7 @@ app.post("/login", function (req, res) {
       res.status(500).json({ success: false, message: "Internal server error" });
     } else if (result.length > 0) {
       // Usporedba lozinki
-      bcrypt.compare(password, result[0].lozinka_korisnika, function(err, bcryptRes) {
+      bcrypt.compare(password, result[0].lozinka_korisnika, function (err, bcryptRes) {
         if (bcryptRes) {
           res.status(200).json({ success: true, message: "Prijava uspješna!" });
         } else {

@@ -33,12 +33,16 @@
       <div class="row flex flex-center">
         <div style="width: 600px">
           <q-card-section class="q-pt-none">
-            <q-carousel v-if="item.slike && item.slike.length > 0 && !showSingleImage" control-type="flat" navigation="true" style="height: 400px">
-              <q-carousel-slide v-for="(image, index) in item.slike" :key="index">
-                <q-img :src="'data:image/jpeg;base64,' + image" />
-              </q-carousel-slide>
-            </q-carousel>
-            <q-img v-else-if="item.slika && showSingleImage" :src="'data:image/jpeg;base64,' + item.slika" no-native-menu />
+            <template v-if="!showSingleImage && item.slike && item.slike.length > 1">
+              <q-carousel control-type="flat" navigation="true" style="height: 400px">
+                <q-carousel-slide v-for="(image, index) in item.slike" :key="index">
+                  <q-img :src="image" />
+                </q-carousel-slide>
+              </q-carousel>
+            </template>
+            <template v-else>
+              <q-img v-if="item.slika" :src="item.slika" no-native-menu />
+            </template>
           </q-card-section>
         </div>
       </div>
@@ -138,9 +142,9 @@ export default {
     axios.get(baseUrl + "get-predmet/" + this.id_predmeta, {}).then((response) => {
       this.item = response.data[0];
       this.potvrdjenaCijena = this.item.pocetna_cijena;
-      if (Array.isArray(this.item.slike)) {
+      /*       if (Array.isArray(this.item.slike)) {
         this.item.slike = this.item.slike.map((image) => image.slika_base64);
-      }
+      } */
       // Set showSingleImage to true if there's only one image
       this.showSingleImage = !!(this.item.slika && !this.item.slike);
     });
