@@ -27,7 +27,22 @@ const connection = mysql.createConnection({
   database: "iooa-aukcije1",
 });
 
+//Cookie
+app.use(session({
+  name: 'sid',
+  secret: 'secret key kljucic',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false,
+    maxAge: 1000*60*60*24
+  }
+}));
+
+app.use(express.urlencoded({extended: true}));
+
 connection.connect();
+
 
 app.get("/api/korisnici", (req, res) => {
   connection.query("SELECT id_korisnika, ime_korisnika, prezime_korisnika, email_korisnika, adresa_korisnika FROM korisnik", (error, results) => {
@@ -221,6 +236,8 @@ app.post("/regaKorisnika", function (request, response) {
 });
 
 app.post("/login", function (req, res) {
+  console.log("SESIJA PRIJE LOGINA: "+req.session);
+
   const data = req.body;
   const email = data.email;
   const password = data.password;
@@ -232,7 +249,16 @@ app.post("/login", function (req, res) {
       // Usporedba lozinki
       bcrypt.compare(password, result[0].lozinka_korisnika, function (err, bcryptRes) {
         if (bcryptRes) {
-          res.status(200).json({ success: true, message: "Prijava uspješna!" });
+
+          var userId = result[0].id_korisnika;
+          req.session.userId = userId;
+          
+
+          console.log("Sesija nakon logina: "+req.session);
+          console.log("UserId:"+ req.session.userId);
+
+
+          res.status(200).json({ success: true, message: "Prijava uspješna!"+  req.session.userId });
         } else {
           res.status(401).json({ success: false, message: "Krivi email ili lozinka!" });
         }
@@ -242,6 +268,12 @@ app.post("/login", function (req, res) {
     }
   });
 });
+
+app.get("/test", (req, res) => {
+  console.log("POSLJE logina userid: " + req.session.userId);
+});
+
+
 
 app.get("/logout", (req, res) => {
   // Destroy the session
