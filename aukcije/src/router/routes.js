@@ -31,6 +31,7 @@ const routes = [
           {path:"racuni", component: () => import("pages/Racuni.vue")},
           {name: "pregledkorisnika", path:"pregledkorisnika/", component: () => import("pages/PregledKorisnika.vue")},
           {name: "korisnikdetalji", path:"korisnikdetalji/:id", component: () => import("pages/KorisnikDetalji.vue") },
+          {path:"pregledkategorija", component: ()=> import("pages/PrikazKategorije.vue")},
       ]},
 
   
