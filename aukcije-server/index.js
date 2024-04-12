@@ -27,22 +27,7 @@ const connection = mysql.createConnection({
   database: "iooa-aukcije1",
 });
 
-//Cookie
-app.use(session({
-  name: 'sid',
-  secret: 'secret key kljucic',
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: false,
-    maxAge: 1000*60*60*24
-  }
-}));
-
-app.use(express.urlencoded({extended: true}));
-
 connection.connect();
-
 
 app.get("/api/korisnici", (req, res) => {
   connection.query("SELECT id_korisnika, ime_korisnika, prezime_korisnika, email_korisnika, adresa_korisnika FROM korisnik", (error, results) => {
@@ -96,7 +81,7 @@ app.get("/api/get-predmet/:id", (req, res) => {
   const { id } = req.params;
 
   connection.query(
-    `SELECT p.naziv_predmeta, p.id_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, TIME_FORMAT( SEC_TO_TIME(TIMESTAMPDIFF(SECOND, p.vrijeme_pocetka, p.vrijeme_zavrsetka)), '%H:%i:%s' ) AS preostalo_vrijeme, p.opis_predmeta, COALESCE(MAX(po.vrijednost_ponude), p.pocetna_cijena) AS vrijednost_ponude, s.slika 
+    `SELECT p.naziv_predmeta, p.id_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, TIME_FORMAT( SEC_TO_TIME(TIMESTAMPDIFF(SECOND, p.vrijeme_pocetka, p.vrijeme_zavrsetka)), '%H:%i:%s' ) AS preostalo_vrijeme, p.opis_predmeta, COALESCE(MAX(po.vrijednost_ponude), p.pocetna_cijena) AS vrijednost_ponude, GROUP_CONCAT(s.slika) AS slike
     FROM predmet p 
     LEFT JOIN ponuda po ON p.id_predmeta = po.id_predmeta 
     LEFT JOIN slika s ON p.id_predmeta = s.id_predmeta 
@@ -105,6 +90,10 @@ app.get("/api/get-predmet/:id", (req, res) => {
     [id],
     (error, results) => {
       if (error) throw error;
+      // Split the slike string into an array
+      if (results.length > 0) {
+        results[0].slike = results[0].slike.split("data:image/jpg;base64,");
+      }
       res.send(results);
     }
   );
@@ -236,8 +225,6 @@ app.post("/regaKorisnika", function (request, response) {
 });
 
 app.post("/login", function (req, res) {
-  console.log("SESIJA PRIJE LOGINA: "+req.session);
-
   const data = req.body;
   const email = data.email;
   const password = data.password;
@@ -249,16 +236,7 @@ app.post("/login", function (req, res) {
       // Usporedba lozinki
       bcrypt.compare(password, result[0].lozinka_korisnika, function (err, bcryptRes) {
         if (bcryptRes) {
-
-          var userId = result[0].id_korisnika;
-          req.session.userId = userId;
-          
-
-          console.log("Sesija nakon logina: "+req.session);
-          console.log("UserId:"+ req.session.userId);
-
-
-          res.status(200).json({ success: true, message: "Prijava uspješna!"+  req.session.userId });
+          res.status(200).json({ success: true, message: "Prijava uspješna!" });
         } else {
           res.status(401).json({ success: false, message: "Krivi email ili lozinka!" });
         }
@@ -268,12 +246,6 @@ app.post("/login", function (req, res) {
     }
   });
 });
-
-app.get("/test", (req, res) => {
-  console.log("POSLJE logina userid: " + req.session.userId);
-});
-
-
 
 app.get("/logout", (req, res) => {
   // Destroy the session
