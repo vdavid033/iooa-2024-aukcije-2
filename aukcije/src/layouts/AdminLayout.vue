@@ -38,7 +38,8 @@
                 </router-link>
             </div>
             <div class="q-pa-sm col">
-                <router-link to="pregledkorisnika" class="link-style" @click="toggleLeftDrawerClose">
+                <router-link :to="{ name: 'pregledkorisnika' }" class="link-style" @click="toggleLeftDrawerClose">
+                  <!--ovaj :to bi se trebao pocet koristiti da se ne dogodi kaos u URLu, obavezno name dodat u routes.js-->
                     <q-btn class="flex flex-center" color="positive" style="width: 280px">
                         Pregled korisnika
                     </q-btn>

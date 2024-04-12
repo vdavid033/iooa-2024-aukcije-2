@@ -286,3 +286,21 @@ app.get("/logout", (req, res) => {
     }
   });
 });
+
+app.get("/api/korisnikinfo/:id", (req, res) => {
+  const id = req.params.id;
+
+  connection.query('SELECT ime_korisnika, prezime_korisnika, email_korisnika, adresa_korisnika, lozinka_korisnika FROM korisnik WHERE id_korisnika = ?', [id], (error, results) => {
+    if (error) throw error;
+    res.send(results);
+  });
+});
+
+app.put("/api/izmjenakorisnika/", (req, res) => {
+  korisnik = req.body;
+  connection.query('UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?', 
+  [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
+    if (error) throw error;
+    res.send(results);
+  })
+});

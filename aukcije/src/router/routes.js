@@ -18,7 +18,7 @@ const routes = [
       { path: "admindash", component: () => import("pages/AdminDashboard.vue") },
       //admin layout -- spojen novi layout sa stranicom
       { path: "pregledkorisnika", component: () => import("pages/PregledKorisnika.vue") },
-
+      
       
 
 
@@ -29,7 +29,8 @@ const routes = [
           {path:"/", component: () => import("pages/AdminDashboard.vue")},
           {path:"kategorije", component: () => import("pages/Kategorije.vue")},
           {path:"racuni", component: () => import("pages/Racuni.vue")},
-          {path:"pregledkorisnika", component: () => import("pages/PregledKorisnika.vue")},
+          {name: "pregledkorisnika", path:"pregledkorisnika/", component: () => import("pages/PregledKorisnika.vue")},
+          {name: "korisnikdetalji", path:"korisnikdetalji/:id", component: () => import("pages/KorisnikDetalji.vue") },
       ]},
 
   

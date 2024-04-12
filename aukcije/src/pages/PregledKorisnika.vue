@@ -19,9 +19,9 @@
         <template v-slot:body-cell-adresa_korisnika="props">
         {{ props.row.adresa_korisnika }}
         </template>
-        <template v-slot:body-cell-gumbovi>
+        <template v-slot:body-cell-gumbovi="props">
             <q-btn-group spread>
-                <q-btn color="primary" label="Izmijeni"/>
+                <q-btn color="primary" label="Izmijeni" @click="odiNaDetalje(props.row.id_korisnika)"/>
                 <q-btn color="red" label="Obriši"/>
             </q-btn-group>
         </template>
@@ -96,7 +96,11 @@ export default
               console.error("Greška pri dohvatu korisnika", error);
           }
             
-        }
+        },
+
+        odiNaDetalje(idKorisnika) {
+            this.$router.push({name:"korisnikdetalji", params:{id:idKorisnika}});
+        },
     }
 };
 
