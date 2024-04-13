@@ -2,6 +2,20 @@
   <q-card>
     <div class="row justify-center q-pa-md">
       <q-input v-model="Pretrazivanje" filled placeholder="Pretraži aukcije" dense class="q-input--width" />
+      <div style="width: 227px">
+        <q-select
+          filled
+          lazy-rules
+          emit-value
+          v-model="selectedsortianje"
+          label="Sortiraj po"
+          :options="sortiranje"
+          option-label="label"
+          option-value="value"
+          map-options
+          @update:model-value="sortiranjeOpcija"
+        />
+      </div>
     </div>
     <q-separator class="separator" />
     <q-item class="q-pa-sm text-bold text-blue-7" style="font-size: 30px">Kategorije </q-item>
@@ -48,6 +62,14 @@ export default {
       Pretrazivanje: "",
       items: [],
       kategorija: [],
+      selectedsortianje: "",
+      sortiranje: [
+        { label: 'Cijena: manja prema većoj', value: 'price-asc' },
+        { label: 'Cijena: veća prema manjoj', value: 'price-desc' },
+        { label: 'Naziv: A do Z', value: 'name-asc' },
+        { label: 'Naziv: Z do A', value: 'name-desc' },
+        { label: 'Vrijeme isteka', value: 'expiration' },
+      ]
     };
   },
   mounted() {
@@ -90,6 +112,25 @@ export default {
     },
     navigateToItem1(id_kategorije) {
       this.$router.push({ path: "kategorija", query: { id_kategorije } });
+    },
+    sortiranjeOpcija(selectedsortianje) {
+      switch (selectedsortianje) {
+        case 'price-asc':
+          this.items.sort((a, b) => a.pocetna_cijena - b.pocetna_cijena);
+          break;
+        case 'price-desc':
+          this.items.sort((a, b) => b.pocetna_cijena - a.pocetna_cijena);
+          break;
+        case 'name-asc':
+          this.items.sort((a, b) => a.naziv_predmeta.localeCompare(b.naziv_predmeta));
+          break;
+        case 'name-desc':
+          this.items.sort((a, b) => b.naziv_predmeta.localeCompare(a.naziv_predmeta));
+          break;
+        case 'expiration':
+          this.items.sort((a, b) => new Date(a.vrijeme_zavrsetka) - new Date(b.vrijeme_zavrsetka));
+          break;
+      }
     },
   },
 };
