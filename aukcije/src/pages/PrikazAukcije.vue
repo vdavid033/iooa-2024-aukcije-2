@@ -34,14 +34,14 @@
         <div style="width: 600px">
           <q-card-section class="q-pt-none">
             <template v-if="!showSingleImage && item.slike && item.slike.length > 1">
-              <q-carousel control-type="flat" navigation="true" style="height: 400px">
-                <q-carousel-slide v-for="(image, index) in item.slike" :key="index">
+              <q-carousel control-color="black" animated v-model="slide" navigation infinite :autoplay="autoplay" arrows transition-prev="slide-right" transition-next="slide-left" @mouseenter="autoplay = false" @mouseleave="autoplay = true">
+                <q-carousel-slide :key="index" v-for="(image, index) in item.slike" :name="index + startingIndex">
                   <q-img :src="image" />
                 </q-carousel-slide>
               </q-carousel>
             </template>
             <template v-else>
-              <q-img v-if="item.slika" :src="item.slika" no-native-menu />
+              <q-img v-if="showSingleImage" :src="(item.slike ? item.slike[0] : item.slika)" />
             </template>
           </q-card-section>
         </div>
@@ -115,6 +115,10 @@ export default {
     id_predmeta() {
       return this.$route.query.id_predmeta;
     },
+
+    startingIndex() {
+      return 2;
+    },
   },
   data() {
     return {
@@ -132,6 +136,7 @@ export default {
       },
       slike: [],
       showSingleImage: false,
+      index: 1,
     };
   },
   mounted() {
@@ -142,11 +147,17 @@ export default {
     axios.get(baseUrl + "get-predmet/" + this.id_predmeta, {}).then((response) => {
       this.item = response.data[0];
       this.potvrdjenaCijena = this.item.pocetna_cijena;
-      /*       if (Array.isArray(this.item.slike)) {
-        this.item.slike = this.item.slike.map((image) => image.slika_base64);
-      } */
-      // Set showSingleImage to true if there's only one image
-      this.showSingleImage = !!(this.item.slika && !this.item.slike);
+
+      if (this.item.slike && this.item.slike.length > 0) {
+        if (this.item.slike.length === 1) {
+          // If there's only one image, showSingleImage should be true
+          this.showSingleImage = true;
+          this.item.slika = this.item.slike[0];
+        } else {
+          // If there are multiple images, showSingleImage should be false
+          this.showSingleImage = false;
+        }
+      }
     });
   },
 

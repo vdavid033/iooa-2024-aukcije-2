@@ -6,6 +6,8 @@ const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const { join } = require("path");
 const path = require("path");
+const multer = require('multer');
+const upload = multer();
 
 const app = express();
 const port = 3000;
@@ -67,21 +69,24 @@ app.get("/getUnosPredmeta", function (request, response) {
   });
 });
 
-app.post("/unosPredmeta", function (request, response) {
+app.post("/unosPredmeta", upload.none(), function (request, response) {
   const data = request.body;
   const predmet = [[data.naziv_predmeta, data.opis_predmeta, data.vrijeme_pocetka, data.vrijeme_zavrsetka, data.pocetna_cijena, data.id_korisnika, data.id_kategorije]];
 
-  connection.query("INSERT INTO predmet (naziv_predmeta, opis_predmeta, vrijeme_pocetka, vrijeme_zavrsetka, pocetna_cijena, id_korisnika, id_kategorije) VALUES ?", [predmet], function (error, results, fields) {
+  connection.query("INSERT INTO predmet (naziv_predmeta, opis_predmeta, vrijeme_pocetka, vrijeme_zavrsetka, pocetna_cijena, id_korisnika, id_kategorije) VALUES ?", [predmet], function (error, results) {
     if (error) throw error;
-    //console.log("Predmet data", data);
     const insertedPredmetId = results.insertId;
-    //console.log("Inserted Predmet ID:", insertedPredmetId);
 
-    connection.query("INSERT INTO slika (slika, id_predmeta) VALUES (?, ?)", [data.slika, insertedPredmetId], function (error, results, fields) {
-      if (error) throw error;
-      //console.log("Slika data", data);
-      return response.send({ error: false, data: results, message: "Predmet i slika su dodani." });
+    Object.keys(data).forEach(key => {
+      if (key.startsWith('file')) {
+        const base64String = data[key];
+        connection.query("INSERT INTO slika (slika, id_predmeta) VALUES (?, ?)", [base64String, insertedPredmetId], function (error) {
+          if (error) throw error;
+        });
+      }
     });
+
+    return response.send({ error: false, message: "Predmet i slike su dodani." });
   });
 });
 
@@ -96,7 +101,7 @@ app.get("/api/get-predmet/:id", (req, res) => {
   const { id } = req.params;
 
   connection.query(
-    `SELECT p.naziv_predmeta, p.id_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, TIME_FORMAT( SEC_TO_TIME(TIMESTAMPDIFF(SECOND, p.vrijeme_pocetka, p.vrijeme_zavrsetka)), '%H:%i:%s' ) AS preostalo_vrijeme, p.opis_predmeta, COALESCE(MAX(po.vrijednost_ponude), p.pocetna_cijena) AS vrijednost_ponude, s.slika 
+    `SELECT p.naziv_predmeta, p.id_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, TIME_FORMAT( SEC_TO_TIME(TIMESTAMPDIFF(SECOND, p.vrijeme_pocetka, p.vrijeme_zavrsetka)), '%H:%i:%s' ) AS preostalo_vrijeme, p.opis_predmeta, COALESCE(MAX(po.vrijednost_ponude), p.pocetna_cijena) AS vrijednost_ponude, GROUP_CONCAT(s.slika SEPARATOR '|||') AS slike
     FROM predmet p 
     LEFT JOIN ponuda po ON p.id_predmeta = po.id_predmeta 
     LEFT JOIN slika s ON p.id_predmeta = s.id_predmeta 
@@ -105,6 +110,9 @@ app.get("/api/get-predmet/:id", (req, res) => {
     [id],
     (error, results) => {
       if (error) throw error;
+      if (results.length > 0 && results[0].slike) {
+        results[0].slike = results[0].slike.split('|||');
+      }
       res.send(results);
     }
   );

@@ -145,9 +145,8 @@
     </div>
 
     <div>
-      <input type="file" accept="image/*" @change="onFileChange" />
+      <input type="file" name="files" accept="image/*" @change="onFileChange" multiple/>
 
-      <q-btn @click="convertImage">Spremi sliku</q-btn>
       <q-separator></q-separator>
       <div v-if="base64Image">
         <img :src="base64Image" />
@@ -213,19 +212,18 @@
 
         kategorije: [],
         korisnik: [],
+        files: [],
+        base64Images: [],
       };
     },
 
     methods: {
       async onFileChange(e) {
-        this.file = e.target.files[0];
+        this.files = Array.from(e.target.files);
         await this.convertImage();
       },
-      async convertImage() {
-        if (!this.file && !this.imageUrl) {
-          return alert("Molimo odaberite sliku ili unesite URL slike.");
-        }
 
+      async convertImage() {
         const options = {
           maxSizeMB: 1,
           maxWidthOrHeight: 1920,
@@ -233,32 +231,27 @@
         };
 
         try {
-          let compressedFile;
+          this.base64Images = [];
+          for (const file of this.files) {
+            const compressedFile = await imageCompression(file, options);
+            const reader = new FileReader();
 
-          if (this.imageUrl) {
-            const response = await fetch(this.imageUrl);
-            const blob = await response.blob();
-            compressedFile = await imageCompression(blob, options);
-          } else {
-            compressedFile = await imageCompression(this.file, options);
+            const promise = new Promise((resolve, reject) => {
+              reader.onload = () => {
+                resolve(reader.result);
+              };
+              reader.onerror = (error) => reject(error);
+            });
+
+            reader.readAsDataURL(compressedFile);
+            const base64String = await promise;
+            this.base64Images.push(base64String);
+
+            this.slika = base64String;
           }
-
-          const reader = new FileReader();
-          reader.readAsDataURL(compressedFile);
-          reader.onload = () => {
-            this.base64Image = reader.result;
-            this.base64Text = reader.result.replace(
-              /^data:image\/[a-z]+;base64,/,
-              ""
-            );
-            this.slika = "data:image/jpg;base64," + this.base64Text;
-          };
-          reader.onerror = (error) => {
-            console.error(error);
-          };
         } catch (error) {
           console.error(error);
-          return alert("Došlo je do pogreške prilikom kompresije slike.");
+          alert("Došlo je do pogreške prilikom kompresije slika.");
         }
       },
 
@@ -268,39 +261,43 @@
       },
 
       async submitForm() {
-        if (!this.file) {
+        if (!this.files.length) {
           this.$q.notify({
-          color: 'negative',
-          position: 'top',
-          message: 'Molimo odaberite sliku.',
-          icon: 'warning'
+            color: 'negative',
+            position: 'top',
+            message: 'Molimo odaberite barem jednu sliku.',
+            icon: 'warning'
           });
           return;
         }
-        const sampleData = {
-          id_predmeta: this.sifra_predmeta,
-          naziv_predmeta: this.naziv_predmeta,
-          opis_predmeta: this.opis_predmeta,
-          slika: this.slika,
-          vrijeme_pocetka: this.vrijemePocetka,
-          vrijeme_zavrsetka: this.vrijemeZavrsetka,
-          pocetna_cijena: this.pocetna_cijena,
-          id_korisnika: this.selectedKorisnik,
-          id_kategorije: this.selectedKategorija,
-        };
+
+        const formData = new FormData();
+        this.base64Images.forEach((base64String, index) => {
+          formData.append(`file${index}`, base64String);
+        });
+
+        formData.append('id_predmeta', this.sifra_predmeta);
+        formData.append('naziv_predmeta', this.naziv_predmeta);
+        formData.append('opis_predmeta', this.opis_predmeta);
+        formData.append('vrijeme_pocetka', this.vrijemePocetka);
+        formData.append('vrijeme_zavrsetka', this.vrijemeZavrsetka);
+        formData.append('pocetna_cijena', this.pocetna_cijena);
+        formData.append('id_korisnika', this.selectedKorisnik);
+        formData.append('id_kategorije', this.selectedKategorija);
 
         try {
-          const response = await axios.post(
-            "http://localhost:3000/unosPredmeta",
-            sampleData
-          );
-          console.log(response.data);
+          const response = await axios.post("http://localhost:3000/unosPredmeta", formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
           this.showDialog = true;
         } catch (error) {
           console.error(error);
         }
       },
     },
+
     mounted() {
       const now = new Date();
       now.setHours(now.getHours() + 2);
