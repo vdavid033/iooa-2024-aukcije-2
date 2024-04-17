@@ -312,3 +312,20 @@ app.put("/api/izmjenakorisnika/", (req, res) => {
     res.send(results);
   })
 });
+
+app.get("/api/kategorijainfo/:id", (req,res)=>{
+  const id = req.params.id;
+
+  connection.query('SELECT naziv_kategorije FROM kategorija WHERE id_kategorije = ?',[id], (error, results)=>{
+    if(error) throw error;
+    res.send(results);
+  })
+});
+
+app.put("/api/izmjenaKategorije", (req,res) => {
+  kategorija= req.body;
+  connection.query('UPDATE kategorija SET naziv_kategorije = ? WHERE id_kategorije= ?',[kategorija.naziv_kategorije, kategorija.id_kategorije], (error, results) => {
+    if (error) throw error;
+    res.send(results);
+  })
+});

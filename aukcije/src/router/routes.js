@@ -28,6 +28,7 @@ const routes = [
         children:[ 
           {path:"/", component: () => import("pages/AdminDashboard.vue")},
           {path:"kategorije", component: () => import("pages/Kategorije.vue")},
+          {name:"kategorijadetalji", path:"kategorija/:id", component: () => import("pages/KategorijaDetalji.vue")},
           {path:"racuni", component: () => import("pages/Racuni.vue")},
           {name: "pregledkorisnika", path:"pregledkorisnika/", component: () => import("pages/PregledKorisnika.vue")},
           {name: "korisnikdetalji", path:"korisnikdetalji/:id", component: () => import("pages/KorisnikDetalji.vue") },
