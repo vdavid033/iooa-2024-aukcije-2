@@ -16,7 +16,7 @@
       <template v-slot:body-cell-gumbovi="props">
         <q-btn-group spread>
           <q-btn color="primary" label="Izmijeni" @click="odiNaDetalje(props.row.id_korisnika)" />
-          <q-btn color="red" label="Obriši" />
+          <q-btn color="red" label="Obriši" @click="obrisiKorisnika(props.row.id_korisnika)" />
         </q-btn-group>
       </template>
     </q-table>
@@ -71,7 +71,7 @@ export default {
     };
   },
 
-  mounted() {
+  async mounted() {
     // Get the JWT token from local storage
     const token = localStorage.getItem("token");
 
@@ -95,6 +95,16 @@ export default {
     odiNaDetalje(idKorisnika) {
       this.$router.push({ name: "korisnikdetalji", params: { id: idKorisnika } });
     },
+
+    async obrisiKorisnika(idKorisnika) {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+        if(window.confirm('Jeste li sigurni da želite obrisati korisnika?')) {
+            const response = await axios.put("http://localhost:3000/api/brisanjekorisnika/" + idKorisnika, null, { headers }); //null zbog PUT 'payloada'
+            const response2 = await axios.get("http://localhost:3000/api/korisnici", {headers});
+            this.korisnici = response2.data;
+        }}
+
   },
 };
 </script>

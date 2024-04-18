@@ -37,7 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 connection.connect();
 
 app.get("/api/korisnici", authJwt.verifyTokenAdmin, (req, res) => {
-  connection.query("SELECT id_korisnika, ime_korisnika, prezime_korisnika, email_korisnika, adresa_korisnika FROM korisnik", (error, results) => {
+  connection.query("SELECT id_korisnika, ime_korisnika, prezime_korisnika, email_korisnika, adresa_korisnika FROM korisnik WHERE ime_korisnika != 'obrisani' AND prezime_korisnika != 'korisnik'", (error, results) => {
     if (error) throw error;
 
     res.send(results);
@@ -282,6 +282,15 @@ app.get("/api/korisnikinfo/:id", authJwt.verifyTokenAdmin, (req, res) => {
 app.put("/api/izmjenakorisnika/", authJwt.verifyTokenAdmin, (req, res) => {
   korisnik = req.body;
   connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?", [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
+    if (error) throw error;
+    res.send(results);
+  });
+});
+
+app.put("/api/brisanjekorisnika/:idKorisnika", authJwt.verifyTokenAdmin, (req, res) => {
+  let rnd_lozinka = require("crypto").randomBytes(64).toString('hex');
+  connection.query('UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, lozinka_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?', 
+  ["obrisani", "korisnik", rnd_lozinka, rnd_lozinka, "obrisani korisnik", req.params.idKorisnika], (error, results) => {
     if (error) throw error;
     res.send(results);
   });
