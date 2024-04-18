@@ -1,4 +1,3 @@
-
 <template>
   <q-page class="bg-blue window-height window-width row justify-center items-center">
     <div class="column">
@@ -24,36 +23,49 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
   data() {
     return {
-      email_korisnika: '',
-      lozinka_korisnika: ''
+      email_korisnika: "",
+      lozinka_korisnika: "",
     };
   },
   methods: {
     async login() {
       try {
-        const response = await axios.post('http://localhost:3000/login', {
+        const response = await axios.post("http://localhost:3000/login", {
           email: this.email_korisnika,
-          password: this.lozinka_korisnika
+          password: this.lozinka_korisnika,
         });
 
-        console.log(response.data);
-        this.$router.push('/Pocetna');
+        if (response.data.success) {
+          // Save the JWT token to local storage
+          localStorage.setItem("token", response.data.token);
+
+          // Redirect to the desired page
+          this.$router.push("/Pocetna");
+        } else {
+          // Show error message if login fails
+          this.$q.notify({
+            color: "negative",
+            position: "top",
+            message: response.data.message,
+            icon: "warning",
+          });
+        }
       } catch (error) {
-        console.error('Login failed:', error);
+        console.error("Login failed:", error);
         this.$q.notify({
-          color: 'negative',
-          position: 'top',
-          message: 'Prijava nije uspjela. Provjerite podatke i pokušajte ponovno.',
-          icon: 'warning'
+          color: "negative",
+          position: "top",
+          message: "Prijava nije uspjela. Provjerite podatke i pokušajte ponovno.",
+          icon: "warning",
         });
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

@@ -51,12 +51,32 @@ export default {
     };
   },
   mounted() {
-    axios.get(baseUrl + "all-predmet").then((response) => {
-      this.items = response.data;
-    });
-    axios.get(baseUrl + "all-kategorija").then((response) => {
-      this.kategorija = response.data;
-    });
+    // Get the JWT token from local storage
+    const token = localStorage.getItem("token");
+
+    // Set up the request headers to include the JWT token
+    const headers = { Authorization: `Bearer ${token}` };
+    // Make the request to fetch all-predmet
+    axios
+      .get(baseUrl + "all-predmet", { headers })
+      .then((response) => {
+        this.items = response.data;
+      })
+      .catch((error) => {
+        console.error("Error fetching all-predmet:", error);
+        // Handle errors as needed
+      });
+
+    // Fetch all-kategorija without token
+    axios
+      .get(baseUrl + "all-kategorija")
+      .then((response) => {
+        this.kategorija = response.data;
+      })
+      .catch((error) => {
+        console.error("Error fetching all-kategorija:", error);
+        // Handle errors as needed
+      });
   },
 
   computed: {

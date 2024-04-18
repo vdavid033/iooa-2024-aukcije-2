@@ -6,6 +6,9 @@ const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const { join } = require("path");
 const path = require("path");
+const jwt = require("jsonwebtoken");
+const config = require("../aukcije-server/auth.config.js");
+const authJwt = require("../aukcije-server/authJwt.js");
 
 const app = express();
 const port = 3000;
@@ -27,24 +30,11 @@ const connection = mysql.createConnection({
   database: "iooa-aukcije1",
 });
 
-//Cookie
-app.use(session({
-  name: 'sid',
-  secret: 'secret key kljucic',
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: false,
-    maxAge: 1000*60*60*24
-  }
-}));
-
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 
 connection.connect();
 
-
-app.get("/api/korisnici", (req, res) => {
+app.get("/api/korisnici", authJwt.verifyTokenAdmin, (req, res) => {
   connection.query("SELECT id_korisnika, ime_korisnika, prezime_korisnika, email_korisnika, adresa_korisnika FROM korisnik", (error, results) => {
     if (error) throw error;
 
@@ -52,7 +42,7 @@ app.get("/api/korisnici", (req, res) => {
   });
 });
 
-app.get("/getUnosPredmeta", function (request, response) {
+app.get("/getUnosPredmeta", authJwt.verifyTokenUser, function (request, response) {
   connection.query("SELECT * FROM korisnik", function (error, korisniciResults) {
     if (error) throw error;
 
@@ -67,7 +57,7 @@ app.get("/getUnosPredmeta", function (request, response) {
   });
 });
 
-app.post("/unosPredmeta", function (request, response) {
+app.post("/unosPredmeta", authJwt.verifyTokenUser, function (request, response) {
   const data = request.body;
   const predmet = [[data.naziv_predmeta, data.opis_predmeta, data.vrijeme_pocetka, data.vrijeme_zavrsetka, data.pocetna_cijena, data.id_korisnika, data.id_kategorije]];
 
@@ -164,7 +154,7 @@ app.get("/api/get-ponuda/:id", (req, res) => {
   });
 });
 
-app.post("/unostrenutnaponuda", function (request, response) {
+app.post("/unostrenutnaponuda", authJwt.verifyTokenUser, function (request, response) {
   console.log("radi unos trenutna ponuda");
   const data = request.body;
   const ponuda = [[data.id_ponude, data.vrijednost_ponude, data.vrijeme_ponude, data.id_korisnika, data.id_predmeta]];
@@ -173,7 +163,7 @@ app.post("/unostrenutnaponuda", function (request, response) {
     return response.send({ error: false, data: results, message: "Dodana je trenutna ponuda." });
   });
 });
-app.post("/api/unos-slike", function (req, res) {
+app.post("/api/unos-slike", authJwt.verifyTokenUser, function (req, res) {
   const data = req.body;
   const slika = data.slika;
 
@@ -236,8 +226,6 @@ app.post("/regaKorisnika", function (request, response) {
 });
 
 app.post("/login", function (req, res) {
-  console.log("SESIJA PRIJE LOGINA: "+req.session);
-
   const data = req.body;
   const email = data.email;
   const password = data.password;
@@ -246,34 +234,21 @@ app.post("/login", function (req, res) {
     if (err) {
       res.status(500).json({ success: false, message: "Internal server error" });
     } else if (result.length > 0) {
-      // Usporedba lozinki
+      // Compare passwords
       bcrypt.compare(password, result[0].lozinka_korisnika, function (err, bcryptRes) {
         if (bcryptRes) {
-
-          var userId = result[0].id_korisnika;
-          req.session.userId = userId;
-          
-
-          console.log("Sesija nakon logina: "+req.session);
-          console.log("UserId:"+ req.session.userId);
-
-
-          res.status(200).json({ success: true, message: "Prijava uspješna!"+  req.session.userId });
+          // Generate JWT token
+          const token = jwt.sign({ id: result[0].id_korisnika, email: result[0].email_korisnika, uloga: result[0].uloga }, config.secret);
+          res.status(200).json({ success: true, message: "Login successful", token: token });
         } else {
-          res.status(401).json({ success: false, message: "Krivi email ili lozinka!" });
+          res.status(401).json({ success: false, message: "Invalid email or password " });
         }
       });
     } else {
-      res.status(401).json({ success: false, message: "Krivi email ili lozinka!" });
+      res.status(401).json({ success: false, message: "Invalid email or password" });
     }
   });
 });
-
-app.get("/test", (req, res) => {
-  console.log("POSLJE logina userid: " + req.session.userId);
-});
-
-
 
 app.get("/logout", (req, res) => {
   // Destroy the session
@@ -287,20 +262,19 @@ app.get("/logout", (req, res) => {
   });
 });
 
-app.get("/api/korisnikinfo/:id", (req, res) => {
+app.get("/api/korisnikinfo/:id", authJwt.verifyTokenAdmin, (req, res) => {
   const id = req.params.id;
 
-  connection.query('SELECT ime_korisnika, prezime_korisnika, email_korisnika, adresa_korisnika, lozinka_korisnika FROM korisnik WHERE id_korisnika = ?', [id], (error, results) => {
+  connection.query("SELECT ime_korisnika, prezime_korisnika, email_korisnika, adresa_korisnika, lozinka_korisnika FROM korisnik WHERE id_korisnika = ?", [id], (error, results) => {
     if (error) throw error;
     res.send(results);
   });
 });
 
-app.put("/api/izmjenakorisnika/", (req, res) => {
+app.put("/api/izmjenakorisnika/", authJwt.verifyTokenAdmin, (req, res) => {
   korisnik = req.body;
-  connection.query('UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?', 
-  [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
+  connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?", [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
     if (error) throw error;
     res.send(results);
-  })
+  });
 });
