@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const { join } = require("path");
 const path = require("path");
-const multer = require('multer');
+const multer = require("multer");
 const upload = multer();
 const jwt = require("jsonwebtoken");
 const config = require("../aukcije-server/auth.config.js");
@@ -67,8 +67,8 @@ app.post("/unosPredmeta", upload.none(), authJwt.verifyTokenUser, function (requ
     if (error) throw error;
     const insertedPredmetId = results.insertId;
 
-    Object.keys(data).forEach(key => {
-      if (key.startsWith('file')) {
+    Object.keys(data).forEach((key) => {
+      if (key.startsWith("file")) {
         const base64String = data[key];
         connection.query("INSERT INTO slika (slika, id_predmeta) VALUES (?, ?)", [base64String, insertedPredmetId], function (error) {
           if (error) throw error;
@@ -101,7 +101,7 @@ app.get("/api/get-predmet/:id", (req, res) => {
     (error, results) => {
       if (error) throw error;
       if (results.length > 0 && results[0].slike) {
-        results[0].slike = results[0].slike.split('|||');
+        results[0].slike = results[0].slike.split("|||");
       }
       res.send(results);
     }
@@ -137,7 +137,7 @@ app.get("/api/get-kategorija-predmet/:id", (req, res) => {
   );
 });
 
-app.get("/api/all-kategorija", (req, res) => {
+app.get("/api/all-kategorija", authJwt.verifyTokenAdmin, (req, res) => {
   connection.query("SELECT * FROM kategorija", (error, results) => {
     if (error) throw error;
     res.send(results);
@@ -281,26 +281,25 @@ app.get("/api/korisnikinfo/:id", authJwt.verifyTokenAdmin, (req, res) => {
 
 app.put("/api/izmjenakorisnika/", authJwt.verifyTokenAdmin, (req, res) => {
   korisnik = req.body;
-  connection.query('UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?', 
-  [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
+  connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?", [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
     if (error) throw error;
     res.send(results);
   });
 });
 
-app.get("/api/kategorijainfo/:id", (req,res)=>{
+app.get("/api/kategorijainfo/:id", authJwt.verifyTokenAdmin, (req, res) => {
   const id = req.params.id;
 
-  connection.query('SELECT naziv_kategorije FROM kategorija WHERE id_kategorije = ?',[id], (error, results)=>{
-    if(error) throw error;
-    res.send(results);
-  })
-});
-
-app.put("/api/izmjenaKategorije", (req,res) => {
-  kategorija= req.body;
-  connection.query('UPDATE kategorija SET naziv_kategorije = ? WHERE id_kategorije= ?',[kategorija.naziv_kategorije, kategorija.id_kategorije], (error, results) => {
+  connection.query("SELECT naziv_kategorije FROM kategorija WHERE id_kategorije = ?", [id], (error, results) => {
     if (error) throw error;
     res.send(results);
-  })
+  });
+});
+
+app.put("/api/izmjenaKategorije", authJwt.verifyTokenAdmin, (req, res) => {
+  kategorija = req.body;
+  connection.query("UPDATE kategorija SET naziv_kategorije = ? WHERE id_kategorije= ?", [kategorija.naziv_kategorije, kategorija.id_kategorije], (error, results) => {
+    if (error) throw error;
+    res.send(results);
+  });
 });

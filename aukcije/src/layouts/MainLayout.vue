@@ -13,9 +13,7 @@
         <q-space></q-space>
         <q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space />
 
-        <router-link to="/Logout" class="link-style">
-          <q-btn label="Odjava" color="negative" class="q-mr-md" />
-        </router-link>
+        <q-btn label="Odjava" color="negative" class="q-mr-md" @click="logout" />
       </q-toolbar>
     </q-header>
 
@@ -80,19 +78,6 @@ export default defineComponent({
     const logout = () => {
       // Clear JWT token from local storage
       localStorage.removeItem("token");
-
-      // Send logout request to the backend
-      axios
-        .get(baseUrl + "logout")
-        .then((response) => {
-          console.log(response.data.message);
-          // Redirect to login page or any other appropriate action
-          this.$router.push("/Pocetna");
-        })
-        .catch((error) => {
-          console.error("Logout failed:", error);
-          // Handle logout failure as needed
-        });
     };
 
     return {

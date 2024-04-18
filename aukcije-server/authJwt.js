@@ -48,15 +48,8 @@ verifyTokenUser = (req, res, next) => {
       });
     }
     req.userId = decoded.id;
-    /*     req.role = decoded.uloga; // Assign the role to the request object */
-    if (decoded.uloga === "user") {
-      next();
-    } else {
-      res.status(403).send({
-        message: "Require User Role!",
-      });
-    }
   });
+  next();
 };
 
 const authJwt = {
