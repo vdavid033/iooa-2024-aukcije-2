@@ -220,9 +220,9 @@ app.post("/regaKorisnika", function (request, response) {
       return response.status(500).json({ error: true, message: "Error hashing password." });
     }
 
-    const korisnik = [[data.ime, data.prezime, data.email, hash, data.adresa]];
+    const korisnik = [[data.ime, data.prezime, data.email, hash, data.adresa, "user"]];
 
-    connection.query("INSERT INTO korisnik (ime_korisnika, prezime_korisnika, email_korisnika, lozinka_korisnika, adresa_korisnika) VALUES ?", [korisnik], function (error, results, fields) {
+    connection.query("INSERT INTO korisnik (ime_korisnika, prezime_korisnika, email_korisnika, lozinka_korisnika, adresa_korisnika, uloga) VALUES ?", [korisnik], function (error, results, fields) {
       if (error) {
         console.error("Registracija korisnika neuspješna.", error);
         return response.status(500).json({ error: true, message: "Registracija korisnika neuspješna." });
@@ -281,19 +281,32 @@ app.get("/api/korisnikinfo/:id", authJwt.verifyTokenAdmin, (req, res) => {
 
 app.put("/api/izmjenakorisnika/", authJwt.verifyTokenAdmin, (req, res) => {
   korisnik = req.body;
-  connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?", [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
-    if (error) throw error;
-    res.send(results);
-  });
+
+  if (korisnik.lozinka_izmijenjena == 1) {
+    const saltRounds = 10;
+    bcrypt.hash(korisnik.lozinka_korisnika, saltRounds, function (err, hash) {
+      if (err) {
+        console.error("Error hashing password:", err);
+        return response.status(500).json({ error: true, message: "Error hashing password." });
+      }
+      connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, lozinka_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?",
+        [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, hash, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
+          if (error) throw error;
+          res.send(results);
+        });
+        
+
+    })
+  };
 });
 
 app.put("/api/brisanjekorisnika/:idKorisnika", authJwt.verifyTokenAdmin, (req, res) => {
   let rnd_lozinka = require("crypto").randomBytes(64).toString('hex');
-  connection.query('UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, lozinka_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?', 
-  ["obrisani", "korisnik", rnd_lozinka, rnd_lozinka, "obrisani korisnik", req.params.idKorisnika], (error, results) => {
-    if (error) throw error;
-    res.send(results);
-  });
+  connection.query('UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, lozinka_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?',
+    ["obrisani", "korisnik", rnd_lozinka, rnd_lozinka, "obrisani korisnik", req.params.idKorisnika], (error, results) => {
+      if (error) throw error;
+      res.send(results);
+    });
 });
 
 app.get("/api/kategorijainfo/:id", authJwt.verifyTokenAdmin, (req, res) => {

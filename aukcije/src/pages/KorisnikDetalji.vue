@@ -1,7 +1,7 @@
 <template>
   <q-page style="margin-left: 2%; margin-right: 2%" window-height window-width>
     <div class="row">
-      <h5 class="text-h3 text-blue q-my-md">Korisnik taj i taj</h5>
+      <h5 ref="h_korisnik" class="text-h3 text-blue q-my-md">Korisnik taj i taj</h5>
     </div>
     <q-form @submit="provjeraPolja">
       <q-input v-model="korisnik_novo.ime_korisnika" label="Ime" outlined dense type="text" />
@@ -10,6 +10,9 @@
       <p ref="p_prezime"></p>
       <q-input v-model="korisnik_novo.email_korisnika" label="E-mail" outlined dense type="email" />
       <p ref="p_email"></p>
+      <q-input v-model="korisnik_novo.lozinka_korisnika" label="Lozinka" outlined dense type="password" />
+      <q-input v-model="korisnik_novo.potvrda_lozinke" label="Potvrda lozinke" outlined dense type="password" />
+      <p style="height:10px"></p>
       <q-input v-model="korisnik_novo.adresa_korisnika" label="Adresa" outlined dense type="text" />
       <p ref="p_adresa"></p>
       <q-btn type="submit" label="Izmijeni" color="primary" class="q-mt-md" />
@@ -27,6 +30,7 @@ export default {
         prezime_korisnika: "",
         email_korisnika: "",
         adresa_korisnika: "",
+        lozinka_korisnika: ""
       },
       korisnik_novo: {
         ime_korisnika: "",
@@ -34,6 +38,9 @@ export default {
         email_korisnika: "",
         adresa_korisnika: "",
         id_korisnika: this.$route.params.id,
+        lozinka_korisnika: "",
+        potvrda_lozinke: "",
+        lozinka_izmijenjena: 0
       },
     };
   },
@@ -66,17 +73,27 @@ export default {
         this.$refs.p_prezime.textContent = "Trenutno prezime: " + this.korisnik_trenutno.prezime_korisnika;
         this.$refs.p_email.textContent = "Trenutni email: " + this.korisnik_trenutno.email_korisnika;
         this.$refs.p_adresa.textContent = "Trenutna adresa: " + this.korisnik_trenutno.adresa_korisnika;
+        this.$refs.h_korisnik.textContent = "Korisnik " + this.korisnik_trenutno.ime_korisnika + " " + this.korisnik_trenutno.prezime_korisnika;
       } catch (error) {
         console.error("Greška pri upisivanju podataka", error);
       }
     },
 
     provjeraPolja() {
-      if (this.korisnik_novo.ime_korisnika == "" && this.korisnik_novo.prezime_korisnika == "" && this.korisnik_novo.email_korisnika == "" && this.korisnik_novo.adresa_korisnika == "") {
+      if (this.korisnik_novo.ime_korisnika == "" && this.korisnik_novo.prezime_korisnika == ""
+        && this.korisnik_novo.email_korisnika == "" && this.korisnik_novo.adresa_korisnika == ""
+        && this.korisnik_novo.lozinka_korisnika == "" && this.korisnik_novo.potvrda_lozinke == "") {
         this.$q.notify({
           color: "negative",
           position: "top",
           message: "Nije napravljena niti jedna izmjena!",
+          icon: "warning",
+        });
+      } else if (this.korisnik_novo.lozinka_korisnika != this.korisnik_novo.potvrda_lozinke) {
+        this.$q.notify({
+          color: "negative",
+          position: "top",
+          message: "Lozinke se ne podudaraju!",
           icon: "warning",
         });
       } else {
@@ -89,6 +106,8 @@ export default {
       this.korisnik_novo.prezime_korisnika = "";
       this.korisnik_novo.email_korisnika = "";
       this.korisnik_novo.adresa_korisnika = "";
+      this.korisnik_novo.lozinka_korisnika = "";
+      this.korisnik_novo.potvrda_lozinke = "";
     },
 
     async izmjenaKorisnika() {
@@ -96,16 +115,15 @@ export default {
       if (this.korisnik_novo.prezime_korisnika == "") this.korisnik_novo.prezime_korisnika = this.korisnik_trenutno.prezime_korisnika;
       if (this.korisnik_novo.email_korisnika == "") this.korisnik_novo.email_korisnika = this.korisnik_trenutno.email_korisnika;
       if (this.korisnik_novo.adresa_korisnika == "") this.korisnik_novo.adresa_korisnika = this.korisnik_trenutno.adresa_korisnika;
+      if (this.korisnik_novo.lozinka_korisnika == "") {
+        this.korisnik_novo.lozinka_korisnika = this.korisnik_trenutno.lozinka_korisnika;
+      } else { //ako JE nova lozinka unesena, hasha se, tu se flag postavlja
+        this.korisnik_novo.lozinka_izmijenjena = 1;
+        }
 
-      //console.log("Uspjeh!");
       try {
-        // Get the JWT token from local storage
         const token = localStorage.getItem("token");
-
-        // Set up the request headers to include the JWT token
         const headers = { Authorization: `Bearer ${token}` };
-
-        // Make the PUT request with axios and include the headers
         const response = await axios.put("http://localhost:3000/api/izmjenakorisnika/", this.korisnik_novo, { headers });
 
         this.$q.notify({
@@ -113,7 +131,7 @@ export default {
           position: "top",
           message: "Izmjena podataka uspješna!",
         });
-        await this.dohvatiKorisnika(this.korisnik_novo.id_korisnika);
+        await this.dohvatiKorisnika(this.korisnik_novo.id_korisnika, headers);
         this.ispisiPodatke(this.korisnik_novo.id_korisnika);
         this.ocistiPolja();
       } catch (error) {
