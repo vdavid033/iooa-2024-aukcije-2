@@ -19,9 +19,6 @@
       <div style="width: 500px">
         <q-input ref="pocetnaCijenaRef" filled type="number" label="Početna cijena proizvoda" v-model="pocetna_cijena" lazy-rules :rules="[(val) => (val !== null && val !== '') || 'Unesite početnu cijenu (brojevi)']"> </q-input>
       </div>
-      <div style="width: 500px">
-        <q-select filled lazy-rules emit-value v-model="selectedKorisnik" label="Korisnik" :options="korisnik" option-label="label" option-value="value" map-options :rules="[(val) => (val !== null && val !== '') || 'Odaberite korisnika']" />
-      </div>
     </div>
     <div class="q-ml-sm flex flex-start q-gutter-sm">
       <div style="width: 300px">
@@ -136,6 +133,7 @@ export default {
       showDialog: false,
       vrijemePocetka: null,
       vrijemeZavrsetka: null,
+      decoded: null,
 
       kategorije: [],
       korisnik: [],
@@ -145,6 +143,18 @@ export default {
   },
 
   methods: {
+    async checkUserRole() {
+      if (!this.decoded || !(this.decoded.uloga === "admin" || this.decoded.uloga === "user")) {
+        this.$q.notify({
+          color: "negative",
+          position: "top",
+          message: "Niste prijavljeni, pristup odbijen",
+          icon: "warning",
+        });
+        this.$router.push('pocetna');
+        }
+    },
+
     async onFileChange(e) {
       this.files = Array.from(e.target.files);
       await this.convertImage();
@@ -209,7 +219,7 @@ export default {
       formData.append("vrijeme_pocetka", this.vrijemePocetka);
       formData.append("vrijeme_zavrsetka", this.vrijemeZavrsetka);
       formData.append("pocetna_cijena", this.pocetna_cijena);
-      formData.append("id_korisnika", this.selectedKorisnik);
+      formData.append("id_korisnika", this.decoded.id);
       formData.append("id_kategorije", this.selectedKategorija);
 
       try {
@@ -232,17 +242,24 @@ export default {
   },
 
   mounted() {
+    function parseJwt(token) {
+      var base64Url = token.split('.')[1];
+      var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      return JSON.parse(jsonPayload);
+    }
     // Get the JWT token from local storage
     const token = localStorage.getItem("token");
+    if (token) {
+          // Set up the request headers to include the JWT token
+      const headers = { Authorization: `Bearer ${token}` };
 
-    // Set up the request headers to include the JWT token
-    const headers = { Authorization: `Bearer ${token}` };
-    const now = new Date();
-    now.setHours(now.getHours() + 2);
-    this.vrijemePocetka = now.toISOString().slice(0, 16);
-    this.vrijemeZavrsetka = this.vrijemePocetka;
+      this.decoded = parseJwt(token);
 
-    axios
+      axios
       .get("http://localhost:3000/getUnosPredmeta", { headers })
       .then((response) => {
         this.kategorije = response.data.kategorije.map((kategorija) => ({
@@ -257,6 +274,17 @@ export default {
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
+    }
+
+
+    this.checkUserRole();
+
+    const now = new Date();
+    now.setHours(now.getHours() + 2);
+    this.vrijemePocetka = now.toISOString().slice(0, 16);
+    this.vrijemeZavrsetka = this.vrijemePocetka;
+
+    
   },
 };
 </script>
