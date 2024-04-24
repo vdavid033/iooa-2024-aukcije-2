@@ -3,18 +3,32 @@
     <!-- podaci o korisniku -->
     <div class="user-info">
       <div class="user-info-header">
+        <div class="row">
+      <h5 ref="h_korisnik" class="text-h3 text-blue q-my-md">Korisnik {{ korisnik_trenutno.ime_korisnika }} {{ korisnik_trenutno.prezime_korisnika }}</h5>
+    </div>
+    <div>
+      <p>Trenutno ime: {{ korisnik_trenutno.ime_korisnika }}</p>
+      <p>Trenutno prezime: {{ korisnik_trenutno.prezime_korisnika }}</p>
+      <p>Trenutni email: {{ korisnik_trenutno.email_korisnika }}</p>
+      <p>Trenutna adresa: {{ korisnik_trenutno.adresa_korisnika }}</p>
+    </div>
         <!--<h2>{{ currentUser.name }} {{ currentUser.surname }}</h2>
         <p>{{ currentUser.dateOfBirth }}</p>
         <p>{{ currentUser.oib }}</p>-->
-        <h2>Ime i prezime: Ivo Ivic</h2>
+        <!--<h2>Ime i prezime: Ivo Ivic</h2>
         <p>Datum rođenja: 7.8.1996.</p>
         <p>E-mail: ivoivic@gmail.com</p>
-        <p>OIB: 12345678908</p>
+        <p>OIB: 12345678908</p>-->
       </div>
       <div class="user-info-image">
         <img src="~assets\profilna.png" alt="Profilna slika">
       </div>
     </div>
+    <q-btn
+      color="primary"
+      label="Izmjena korisničkih podataka"
+      @click="$router.push('/UpdateProfil')" 
+    />
  
     <!-- predmeti na aukciji koje je korisnik postavio -->
     <h3>Vaši predmeti na aukciji</h3>
@@ -264,14 +278,41 @@
 
 
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
       currentUser: {}, // Korisnički podaci
       userAuctionItems: [], // Predmeti koje je korisnik postavio na aukciju
-      userBids: [] // Predmeti na koje je korisnik postavio bid
+      userBids: [], // Predmeti na koje je korisnik postavio bid
+      korisnik_trenutno: {
+        ime_korisnika: "",
+        prezime_korisnika: "",
+        email_korisnika: "",
+        adresa_korisnika: ""
+      }
     }
   },
+
+  async mounted() {
+    try {
+      // Get the JWT token from local storage
+      const token = localStorage.getItem("token");
+
+      // Parse the token to get user ID
+      const userId = this.getUserIdFromToken(token);
+
+      // Fetch user data using user ID
+      const userData = await this.fetchUserData(userId);
+
+      // Update the component's data with the fetched user data
+      this.korisnik_trenutno = userData;
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  },
+
   methods: {
     editAuctionItem(item) {
       // Funkcija za uređivanje predmeta na aukciji
@@ -284,7 +325,30 @@ export default {
     },
     deleteBid(bid) {
       // Funkcija za brisanje bid-a na aukciji
+    },
+    getUserIdFromToken(token) {
+      // Parse JWT token and extract user ID
+      var base64Url = token.split('.')[1];
+      var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload).id;
+    },
+
+    async fetchUserData(userId) {
+      try {
+        // Fetch user data from the server using user ID
+        const response = await axios.get(`http://localhost:3000/api/korisnikinfo1/${userId}`);
+        // Return user data
+        return response.data[0];
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        // If an error occurs, you might want to handle it accordingly
+        throw error;
+      }
     }
   }
-}
+  }
+
 </script>
