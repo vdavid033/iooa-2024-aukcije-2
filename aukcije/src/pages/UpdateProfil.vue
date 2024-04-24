@@ -1,7 +1,7 @@
 <template>
   <q-page style="margin-left: 2%; margin-right: 2%" window-height window-width>
     <div class="row">
-      <h5 ref="h_korisnik" class="text-h3 text-blue q-my-md">Korisnik taj i taj</h5>
+      <h5 ref="h_korisnik" class="text-h3 text-blue q-my-md">Korisnik {{ korisnik_trenutno.ime_korisnika }} {{ korisnik_trenutno.prezime_korisnika }}</h5>
     </div>
     <q-form @submit="provjeraPolja">
       <q-input v-model="korisnik_novo.ime_korisnika" label="Ime" outlined dense type="text" />
@@ -22,6 +22,7 @@
 
 <script>
 import axios from "axios";
+
 export default {
   data() {
     return {
@@ -37,7 +38,6 @@ export default {
         prezime_korisnika: "",
         email_korisnika: "",
         adresa_korisnika: "",
-        id_korisnika: this.$route.params.id,
         lozinka_korisnika: "",
         potvrda_lozinke: "",
         lozinka_izmijenjena: 0
@@ -46,28 +46,51 @@ export default {
   },
 
   async mounted() {
-    // Get the JWT token from local storage
-    const token = localStorage.getItem("token");
+    try {
+      // Get the JWT token from local storage
+      const token = localStorage.getItem("token");
 
-    // Set up the request headers to include the JWT token
-    const headers = { Authorization: `Bearer ${token}` };
-    const id = this.$route.params.id;
-    await this.dohvatiKorisnika(id, headers);
-    this.ispisiPodatke();
+      // Parse the token to get user ID
+      const userId = this.getUserIdFromToken(token);
+
+      // Fetch user data using user ID
+      const userData = await this.fetchUserData(userId);
+
+      // Update the component's data with the fetched user data
+      this.korisnik_trenutno = userData;
+
+      // Print user data
+      this.ispisiPodatke();
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
   },
 
   methods: {
-    async dohvatiKorisnika(id, headers) {
+    getUserIdFromToken(token) {
+      // Parse JWT token and extract user ID
+      var base64Url = token.split('.')[1];
+      var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload).id;
+    },
+
+    async fetchUserData(userId) {
       try {
-        const response = await axios.get("http://localhost:3000/api/korisnikinfo/" + id, { headers });
-        //console.log(response.data[0]);
-        this.korisnik_trenutno = response.data[0];
+        // Fetch user data from the server using user ID
+        const response = await axios.get(`http://localhost:3000/api/korisnikinfo1/${userId}`);
+        // Return user data
+        return response.data[0];
       } catch (error) {
-        console.error("Greška pri dohvatu korisnika", error);
+        console.error("Error fetching user data:", error);
+        // If an error occurs, you might want to handle it accordingly
+        throw error;
       }
     },
 
-    async ispisiPodatke() {
+    ispisiPodatke() {
       try {
         this.$refs.p_ime.textContent = "Trenutno ime: " + this.korisnik_trenutno.ime_korisnika;
         this.$refs.p_prezime.textContent = "Trenutno prezime: " + this.korisnik_trenutno.prezime_korisnika;
@@ -80,9 +103,14 @@ export default {
     },
 
     provjeraPolja() {
-      if (this.korisnik_novo.ime_korisnika == "" && this.korisnik_novo.prezime_korisnika == ""
-        && this.korisnik_novo.email_korisnika == "" && this.korisnik_novo.adresa_korisnika == ""
-        && this.korisnik_novo.lozinka_korisnika == "" && this.korisnik_novo.potvrda_lozinke == "") {
+      if (
+        this.korisnik_novo.ime_korisnika == "" &&
+        this.korisnik_novo.prezime_korisnika == "" &&
+        this.korisnik_novo.email_korisnika == "" &&
+        this.korisnik_novo.adresa_korisnika == "" &&
+        this.korisnik_novo.lozinka_korisnika == "" &&
+        this.korisnik_novo.potvrda_lozinke == ""
+      ) {
         this.$q.notify({
           color: "negative",
           position: "top",
@@ -119,20 +147,20 @@ export default {
         this.korisnik_novo.lozinka_korisnika = this.korisnik_trenutno.lozinka_korisnika;
       } else { //ako JE nova lozinka unesena, hasha se, tu se flag postavlja
         this.korisnik_novo.lozinka_izmijenjena = 1;
-        }
+      }
 
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        const response = await axios.put("http://localhost:3000/api/izmjenakorisnika/", this.korisnik_novo, { headers });
+        const response = await axios.put("http://localhost:3000/api/izmjenakorisnika1/", this.korisnik_novo, { headers });
 
         this.$q.notify({
           color: "positive",
           position: "top",
           message: "Izmjena podataka uspješna!",
         });
-        await this.dohvatiKorisnika(this.korisnik_novo.id_korisnika, headers);
-        this.ispisiPodatke(this.korisnik_novo.id_korisnika);
+        await this.fetchUserData(this.korisnik_novo.id_korisnika);
+        this.ispisiPodatke();
         this.ocistiPolja();
       } catch (error) {
         this.$q.notify({
@@ -140,7 +168,7 @@ export default {
           position: "top",
           message: "Izmjena podataka neuspješna.",
         });
-        console.log(error);
+        console.error("Error updating user data:", error);
       }
     },
   },

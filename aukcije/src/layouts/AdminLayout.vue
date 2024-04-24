@@ -10,8 +10,9 @@
               <img src="~assets\aukcije_logo.jpg" alt="Logo" />
             </q-avatar>
           </router-link>
-          Admin dashboard </q-toolbar-title
-        ><q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space />
+          Admin dashboard
+        </q-toolbar-title>
+        <q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space />
 
         <template v-if="isAuthenticated()">
           <q-btn label="Odjava" color="negative" class="q-mr-md" @click="confirmLogout" />
@@ -35,8 +36,7 @@
           </router-link>
         </div>
         <div class="q-pa-sm col">
-          <router-link :to="{ name: 'pregledkorisnika' }" class="link-style" @click="toggleLeftDrawerClose">
-            <!--ovaj :to bi se trebao pocet koristiti da se ne dogodi kaos u URLu, obavezno name dodat u routes.js-->
+          <router-link to="pregledkorisnika" class="link-style" @click="toggleLeftDrawerClose">
             <q-btn class="flex flex-center" color="positive" style="width: 280px"> Pregled korisnika </q-btn>
           </router-link>
         </div>
@@ -78,9 +78,7 @@ import { ref } from "vue";
 export default {
   setup() {
     const confirmLogoutDialog = ref(false);
-
     const leftDrawerOpen = ref(false);
-
     const token = ref(localStorage.getItem("token"));
 
     const isAuthenticated = () => {
@@ -100,7 +98,6 @@ export default {
       // Clear JWT token from local storage
       localStorage.removeItem("token");
     };
-
     return {
       toggleLeftDrawerClose,
       confirmLogoutDialog,

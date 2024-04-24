@@ -15,6 +15,7 @@ const routes = [
       { path: "Logout", component: () => import("pages/Logout.vue") },
       { path: "registracija", component: () => import("pages/Registracija_m.vue") },
       { path: "Moj_profil", component: () => import("pages/Moj_profil.vue") },
+      { path: "UpdateProfil", component: () => import("pages/UpdateProfil.vue") },
       { path: "admindash", component: () => import("pages/AdminDashboard.vue") },
       //admin layout -- spojen novi layout sa stranicom
       { path: "pregledkorisnika", component: () => import("pages/PregledKorisnika.vue") },
