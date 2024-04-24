@@ -45,7 +45,10 @@ export default {
           localStorage.setItem("token", response.data.token);
 
           // Redirect to the desired page
-          this.$router.push("/Pocetna");
+          this.$router.push("/Pocetna").then(() => {
+            // Refresh the page
+            window.location.reload();
+          });
         } else {
           // Show error message if login fails
           this.$q.notify({

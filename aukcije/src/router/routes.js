@@ -1,4 +1,4 @@
-import Admin from "layouts/AdminLayout"
+import Admin from "layouts/AdminLayout";
 
 const routes = [
   {
@@ -18,23 +18,20 @@ const routes = [
       { path: "admindash", component: () => import("pages/AdminDashboard.vue") },
       //admin layout -- spojen novi layout sa stranicom
       { path: "pregledkorisnika", component: () => import("pages/PregledKorisnika.vue") },
-      
-      
-
-
     ],
   },
-  { path: "/admin/", component: () => import("layouts/AdminLayout.vue"), 
-        children:[ 
-          {path:"/", component: () => import("pages/AdminDashboard.vue")},
-          {path:"kategorije", component: () => import("pages/Kategorije.vue")},
-          {name:"kategorijadetalji", path:"kategorija/:id", component: () => import("pages/KategorijaDetalji.vue")},
-          {path:"racuni", component: () => import("pages/Racuni.vue")},
-          {name: "pregledkorisnika", path:"pregledkorisnika/", component: () => import("pages/PregledKorisnika.vue")},
-          {name: "korisnikdetalji", path:"korisnikdetalji/:id", component: () => import("pages/KorisnikDetalji.vue") },
-      ]},
-
-  
+  {
+    path: "/admin/",
+    component: () => import("layouts/AdminLayout.vue"),
+    children: [
+      { path: "/", component: () => import("pages/AdminDashboard.vue") },
+      { path: "kategorije", component: () => import("pages/Kategorije.vue") },
+      { name: "kategorijadetalji", path: "kategorija/:id", component: () => import("pages/KategorijaDetalji.vue") },
+      { path: "racuni", component: () => import("pages/Racuni.vue") },
+      { name: "pregledkorisnika", path: "pregledkorisnika/", component: () => import("pages/PregledKorisnika.vue") },
+      { name: "korisnikdetalji", path: "korisnikdetalji/:id", component: () => import("pages/KorisnikDetalji.vue") },
+    ],
+  },
 
   // Always leave this as last one,
   // but you can also remove it

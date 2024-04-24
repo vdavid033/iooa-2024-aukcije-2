@@ -137,7 +137,7 @@ app.get("/api/get-kategorija-predmet/:id", (req, res) => {
   );
 });
 
-app.get("/api/all-kategorija", authJwt.verifyTokenAdmin, (req, res) => {
+app.get("/api/all-kategorija", (req, res) => {
   connection.query("SELECT * FROM kategorija", (error, results) => {
     if (error) throw error;
     res.send(results);
