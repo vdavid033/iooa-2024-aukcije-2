@@ -370,3 +370,11 @@ app.put("/api/izmjenaKategorije", authJwt.verifyTokenAdmin, (req, res) => {
     res.send(results);
   });
 });
+
+app.get("/api/vlastiti-predmeti/:id", authJwt.verifyTokenUser, (req, res) => {
+  
+  connection.query("SELECT p.id_predmeta, p.opis_predmeta, p.naziv_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, CONCAT( FLOOR(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) / (24*3600)), ' dana, ', TIME_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) % (24*3600)), '%H:%i:%s') ) AS preostalo_vrijeme, (SELECT slika FROM slika WHERE id_predmeta = p.id_predmeta LIMIT 1) AS slika FROM predmet p WHERE id_korisnika = ? ORDER BY preostalo_vrijeme DESC;", [req.params.id], (error, results) => {
+    if (error) throw error;
+    res.send(results);
+  });
+})
