@@ -12,9 +12,25 @@
         </q-toolbar-title>
         <q-space></q-space>
         <q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space />
-
         <template v-if="isAuthenticated()">
-          <q-btn label="Odjava" color="negative" class="q-mr-md" @click="confirmLogout" />
+          <div class="q-pa-md">
+            <q-btn-dropdown color="primary" :label="`${userIme} ${userPrezime}`">
+              <q-list>
+                <router-link to="/Moj_profil" class="link-style" @click="toggleLeftDrawerClose">
+                  <q-item clickable v-close-popup @click="onItemClick">
+                    <q-item-section>
+                      <q-item-label>Moj profil</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </router-link>
+                <q-item clickable v-close-popup @click="confirmLogout">
+                  <q-item-section>
+                    <q-item-label>Odjava</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-btn-dropdown>
+          </div>
         </template>
       </q-toolbar>
     </q-header>
@@ -97,19 +113,37 @@ export default defineComponent({
 
     const token = ref(localStorage.getItem("token"));
 
-    const decodeToken = (token) => {
-      try {
-        const decoded = jwtDecode(token);
-        return decoded.uloga;
-      } catch (error) {
-        console.error("Error decoding token:", error);
-        return null;
+    // Decode the JWT token and extract the user's name and surname
+    const userIme = computed(() => {
+      if (token.value) {
+        try {
+          const decodedToken = jwtDecode(token.value);
+          return decodedToken.ime; // Return user's name from token
+        } catch (error) {
+          console.error("Error decoding token:", error);
+          return "";
+        }
       }
-    };
+      return "";
+    });
+
+    const userPrezime = computed(() => {
+      if (token.value) {
+        try {
+          const decodedToken = jwtDecode(token.value);
+          return decodedToken.prezime; // Return user's surname from token
+        } catch (error) {
+          console.error("Error decoding token:", error);
+          return "";
+        }
+      }
+      return "";
+    });
 
     const isAdmin = () => {
       if (isAuthenticated() && token.value) {
-        return decodeToken(token.value) === "admin";
+        const decodedToken = jwtDecode(token.value);
+        return decodedToken.uloga === "admin";
       }
       return false;
     };
@@ -147,6 +181,8 @@ export default defineComponent({
       toggleLeftDrawerClose,
       confirmLogout,
       logoutAndReload,
+      userPrezime,
+      userIme,
     };
   },
 });

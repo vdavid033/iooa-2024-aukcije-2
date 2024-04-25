@@ -246,7 +246,7 @@ app.post("/login", function (req, res) {
       bcrypt.compare(password, result[0].lozinka_korisnika, function (err, bcryptRes) {
         if (bcryptRes) {
           // Generate JWT token
-          const token = jwt.sign({ id: result[0].id_korisnika, email: result[0].email_korisnika, uloga: result[0].uloga }, config.secret);
+          const token = jwt.sign({ id: result[0].id_korisnika, prezime: result[0].prezime_korisnika, ime: result[0].ime_korisnika, uloga: result[0].uloga }, config.secret);
           res.status(200).json({ success: true, message: "Login successful", token: token });
         } else {
           res.status(401).json({ success: false, message: "Invalid email or password " });
@@ -288,7 +288,6 @@ app.get("/api/korisnikinfo1/:id", (req, res) => {
   });
 });
 
-
 app.put("/api/izmjenakorisnika/", authJwt.verifyTokenAdmin, (req, res) => {
   korisnik = req.body;
 
@@ -299,15 +298,12 @@ app.put("/api/izmjenakorisnika/", authJwt.verifyTokenAdmin, (req, res) => {
         console.error("Error hashing password:", err);
         return response.status(500).json({ error: true, message: "Error hashing password." });
       }
-      connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, lozinka_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?",
-        [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, hash, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
-          if (error) throw error;
-          res.send(results);
-        });
-        
-
-    })
-  };
+      connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, lozinka_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?", [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, hash, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
+        if (error) throw error;
+        res.send(results);
+      });
+    });
+  }
 });
 
 app.put("/api/izmjenakorisnika1/", (req, res) => {
@@ -320,38 +316,33 @@ app.put("/api/izmjenakorisnika1/", (req, res) => {
         console.error("Error hashing password:", err);
         return res.status(500).json({ error: true, message: "Error hashing password." });
       }
-      connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, lozinka_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?",
-        [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, hash, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
-          if (error) {
-            console.error("Error updating user:", error);
-            return res.status(500).json({ error: true, message: "Error updating user." });
-          }
-          res.json({ success: true, message: "User updated successfully." });
-        });
-    });
-  } else {
-    // Handle the case where the password is not changed
-    // Assuming you also want to update other fields even if the password is not changed
-    connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?",
-      [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
+      connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, lozinka_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?", [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, hash, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
         if (error) {
           console.error("Error updating user:", error);
           return res.status(500).json({ error: true, message: "Error updating user." });
         }
         res.json({ success: true, message: "User updated successfully." });
       });
+    });
+  } else {
+    // Handle the case where the password is not changed
+    // Assuming you also want to update other fields even if the password is not changed
+    connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?", [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
+      if (error) {
+        console.error("Error updating user:", error);
+        return res.status(500).json({ error: true, message: "Error updating user." });
+      }
+      res.json({ success: true, message: "User updated successfully." });
+    });
   }
 });
 
-
-
 app.put("/api/brisanjekorisnika/:idKorisnika", authJwt.verifyTokenAdmin, (req, res) => {
-  let rnd_lozinka = require("crypto").randomBytes(64).toString('hex');
-  connection.query('UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, lozinka_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?',
-    ["obrisani", "korisnik", rnd_lozinka, rnd_lozinka, "obrisani korisnik", req.params.idKorisnika], (error, results) => {
-      if (error) throw error;
-      res.send(results);
-    });
+  let rnd_lozinka = require("crypto").randomBytes(64).toString("hex");
+  connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, lozinka_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?", ["obrisani", "korisnik", rnd_lozinka, rnd_lozinka, "obrisani korisnik", req.params.idKorisnika], (error, results) => {
+    if (error) throw error;
+    res.send(results);
+  });
 });
 
 app.get("/api/kategorijainfo/:id", authJwt.verifyTokenAdmin, (req, res) => {
