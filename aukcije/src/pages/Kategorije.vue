@@ -11,7 +11,7 @@
         </q-btn-group>
       </template>
     </q-table>
-    <q-btn class="q-my-md" icon-right="add" color="primary" label="Dodaj novu kategoriju" />
+    <q-btn class="q-my-md" icon-right="add" color="primary" label="Dodaj novu kategoriju" @click="dodajKategoriju()" />
   </div>
 </template>
 
@@ -62,6 +62,10 @@ export default {
     odiNaDetalje(idKategorije) {
       this.$router.push({ name: "kategorijadetalji", params: { id: idKategorije } });
     },
+
+    dodajKategoriju(){
+      this.$router.push({path: "dodajkategoriju"});
+    }
   },
 };
 </script>

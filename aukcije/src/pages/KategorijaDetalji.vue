@@ -58,6 +58,10 @@ export default {
       this.kategorija_novo.naziv_kategorije = "";
     },
 
+    previosPage(){
+      setTimeout(() => {window.history.back()}, 500);
+    },
+
     async izmjenaKategorije() {
       if (this.kategorija_novo.naziv_kategorije == "") {
         this.kategorija_novo.naziv_kategorije = this.kateogrija_trenutno.naziv_kategorije;
@@ -82,6 +86,9 @@ export default {
         await this.dohvatiKategoriju(this.kategorija_novo.id_kategorije, headers);
         this.ispisiPodatke(this.kategorija_novo.id_kategorije);
         this.ocistiPolja();
+
+        this.previosPage();
+
       } catch (error) {
         this.$q.notify({
           color: "negative",
