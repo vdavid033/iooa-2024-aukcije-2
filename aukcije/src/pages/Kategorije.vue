@@ -7,7 +7,7 @@
       <template v-slot:body-cell-gumbovi="props">
         <q-btn-group spread>
           <q-btn color="primary" label="Izmijeni" icon-right="edit" @click="odiNaDetalje(props.row.id_kategorije)" />
-          <q-btn color="red" label="Obriši" icon-right="delete" />
+          <q-btn color="red" label="Obriši" icon-right="delete" @click="deleteKategorija(props.row.id_kategorije)" />
         </q-btn-group>
       </template>
     </q-table>
@@ -65,7 +65,37 @@ export default {
 
     dodajKategoriju(){
       this.$router.push({path: "dodajkategoriju"});
+    },
+
+    async deleteKategorija(idKategorije){
+      try{
+        const token = localStorage.getItem("token");
+
+    // Set up the request headers to include the JWT token
+    const headers = { Authorization: `Bearer ${token}` };
+
+        const response = await axios.delete("http://localhost:3000/api/deleteKategoriju/" + idKategorije, {headers})
+
+        this.$q.notify({
+          color: "positive",
+          position: "top",
+          message: "Kategorija uspješno obrisana.",
+        });
+        
+        this.dohvatiKategorije({headers});
+        
+       } catch (error){
+        console.error("Greška pri brisanju kategorije.");
+
+        this.$q.notify({
+          color: "negative",
+          position: "top",
+          message: "Greška pri brisanju kategorije!",
+          icon: "warning",
+        });
+      }
     }
+
   },
 };
 </script>

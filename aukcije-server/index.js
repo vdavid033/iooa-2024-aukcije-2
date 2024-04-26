@@ -371,9 +371,24 @@ app.post("/api/dodajKategoriju", authJwt.verifyTokenAdmin, (req,res)=>{
       console.error("Neuspjeh unosa nove kategorije.", error);
       return res.status(500).json({ error: true, message: "Neuspjeh unosa nove kategorije." });
     }
-    console.log("data", data);
+    //console.log("data", data);
     return res.send({ error: false, data: results, message: "Kategorija unešena uspješno." });
   });
+});
+
+app.delete("/api/deleteKategoriju/:id", authJwt.verifyTokenAdmin, (req,res)=>{
+  const idKat = req.params.id;
+
+  connection.query("DELETE FROM kategorija WHERE id_kategorije = (?)", [idKat], (error, results) => {
+    if(error){
+      console.error("Neuspješno brisanje.");
+      return res.status(500).json({error: true, message: "Neuspješno brisanje " + idKat});
+
+    }
+    console.log("Brisanje uspješno.");
+    return res.send({error: false, message: "Kategorija uspješno obrisana."});
+  })
+
 });
 
 app.get("/api/vlastiti-predmeti/:id", authJwt.verifyTokenUser, (req, res) => {
