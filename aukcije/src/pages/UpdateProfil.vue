@@ -31,6 +31,7 @@ export default {
         prezime_korisnika: "",
         email_korisnika: "",
         adresa_korisnika: "",
+        id_korisnika: "",
         lozinka_korisnika: ""
       },
       korisnik_novo: {
@@ -40,6 +41,7 @@ export default {
         adresa_korisnika: "",
         lozinka_korisnika: "",
         potvrda_lozinke: "",
+        id_korisnika: this.$route.params.id,
         lozinka_izmijenjena: 0
       },
     };
@@ -58,6 +60,7 @@ export default {
 
       // Update the component's data with the fetched user data
       this.korisnik_trenutno = userData;
+      this.korisnik_novo.id_korisnika = userId;
 
       // Print user data
       this.ispisiPodatke();
@@ -153,6 +156,7 @@ export default {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
         const response = await axios.put("http://localhost:3000/api/izmjenakorisnika1/", this.korisnik_novo, { headers });
+        this.korisnik_trenutno = { ...this.korisnik_novo };
 
         this.$q.notify({
           color: "positive",
@@ -160,6 +164,9 @@ export default {
           message: "Izmjena podataka uspješna!",
         });
         await this.fetchUserData(this.korisnik_novo.id_korisnika);
+        console.log(this.korisnik_novo.id_korisnika);
+        console.log("novo ime"+this.korisnik_novo.ime_korisnika);
+        console.log("trenutno ime"+this.korisnik_trenutno.ime_korisnika);
         this.ispisiPodatke();
         this.ocistiPolja();
       } catch (error) {
