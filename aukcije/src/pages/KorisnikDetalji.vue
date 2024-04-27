@@ -40,7 +40,7 @@ export default {
         id_korisnika: this.$route.params.id,
         lozinka_korisnika: "",
         potvrda_lozinke: "",
-        lozinka_izmijenjena: 0
+        lozinka_izmijenjena: false
       },
     };
   },
@@ -118,7 +118,7 @@ export default {
       if (this.korisnik_novo.lozinka_korisnika == "") {
         this.korisnik_novo.lozinka_korisnika = this.korisnik_trenutno.lozinka_korisnika;
       } else { //ako JE nova lozinka unesena, hasha se, tu se flag postavlja
-        this.korisnik_novo.lozinka_izmijenjena = 1;
+        this.korisnik_novo.lozinka_izmijenjena = true;
         }
 
       try {

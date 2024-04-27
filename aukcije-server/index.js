@@ -291,7 +291,7 @@ app.get("/api/korisnikinfo1/:id", (req, res) => {
 app.put("/api/izmjenakorisnika/", authJwt.verifyTokenAdmin, (req, res) => {
   korisnik = req.body;
 
-  if (korisnik.lozinka_izmijenjena == 1) {
+  if (korisnik.lozinka_izmijenjena) { //ako nova lozinka JE unesena
     const saltRounds = 10;
     bcrypt.hash(korisnik.lozinka_korisnika, saltRounds, function (err, hash) {
       if (err) {
@@ -302,6 +302,11 @@ app.put("/api/izmjenakorisnika/", authJwt.verifyTokenAdmin, (req, res) => {
         if (error) throw error;
         res.send(results);
       });
+    });
+  } else { //ako lozinka nije unesena
+    connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, lozinka_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?", [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, korisnik.lozinka_korisnika, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
+      if (error) throw error;
+      res.send(results);
     });
   }
 });
