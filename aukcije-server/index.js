@@ -367,11 +367,11 @@ app.put("/api/izmjenaKategorije", authJwt.verifyTokenAdmin, (req, res) => {
   });
 });
 
-app.post("/api/dodajKategoriju", authJwt.verifyTokenAdmin, (req,res)=>{
+app.post("/api/dodajKategoriju", authJwt.verifyTokenAdmin, (req, res) => {
   const data = req.body;
   const naziv_kategorije = data.naziv_kategorije;
 
-  connection.query("INSERT INTO kategorija (naziv_kategorije) VALUES (?)", [naziv_kategorije], (error, results)=>{
+  connection.query("INSERT INTO kategorija (naziv_kategorije) VALUES (?)", [naziv_kategorije], (error, results) => {
     if (error) {
       console.error("Neuspjeh unosa nove kategorije.", error);
       return res.status(500).json({ error: true, message: "Neuspjeh unosa nove kategorije." });
@@ -381,26 +381,39 @@ app.post("/api/dodajKategoriju", authJwt.verifyTokenAdmin, (req,res)=>{
   });
 });
 
-app.delete("/api/deleteKategoriju/:id", authJwt.verifyTokenAdmin, (req,res)=>{
+app.delete("/api/deleteKategoriju/:id", authJwt.verifyTokenAdmin, (req, res) => {
   const idKat = req.params.id;
 
   connection.query("DELETE FROM kategorija WHERE id_kategorije = (?)", [idKat], (error, results) => {
-    if(error){
+    if (error) {
       console.error("Neuspješno brisanje.");
-      return res.status(500).json({error: true, message: "Neuspješno brisanje " + idKat});
+      return res.status(500).json({ error: true, message: "Neuspješno brisanje " + idKat });
 
     }
     console.log("Brisanje uspješno.");
-    return res.send({error: false, message: "Kategorija uspješno obrisana."});
+    return res.send({ error: false, message: "Kategorija uspješno obrisana." });
   })
 
 });
 
 app.get("/api/vlastiti-predmeti/:id", authJwt.verifyTokenUser, (req, res) => {
-  
+
   connection.query("SELECT p.id_predmeta, p.opis_predmeta, p.naziv_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, CONCAT( FLOOR(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) / (24*3600)), ' dana, ', TIME_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) % (24*3600)), '%H:%i:%s') ) AS preostalo_vrijeme, (SELECT slika FROM slika WHERE id_predmeta = p.id_predmeta LIMIT 1) AS slika FROM predmet p WHERE id_korisnika = ? ORDER BY preostalo_vrijeme DESC;", [req.params.id], (error, results) => {
     if (error) throw error;
     res.send(results);
   });
+})
+
+app.delete("/api/brisanjePredmeta/:id", authJwt.verifyTokenUser, (req, res) => {
+
+  connection.query("DELETE FROM predmet WHERE id_predmeta = ?", [req.params.id], (error, results) => {
+    if (error) {
+      console.error("Neuspješno brisanje.");
+      return res.status(500).json({ error: true, message: "Neuspješno brisanje " + error });
+
+    }
+    console.log("Brisanje uspješno.");
+    return res.send({ error: false, message: "." });
+  })
 })
 

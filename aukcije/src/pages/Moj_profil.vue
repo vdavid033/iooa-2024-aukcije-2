@@ -32,9 +32,9 @@
     <p ref="nema_predmete"></p>
     <div class="q-pa-sm row flex flex-center">
       <div v-for="predmet in vlastitiPredmeti" :key="predmet.id_predmeta" class="q-pa-md" style="width: 400px">
-        <q-card @click="navigateToItem(predmet.id_predmeta)">
-          <q-img v-if="predmet.slika" :src="predmet.slika" no-native-menu />
-          <q-item-section>
+        <q-card>
+          <q-item-section @click="pregledPredmeta(predmet.id_predmeta)">
+            <q-img v-if="predmet.slika" :src="predmet.slika" no-native-menu />
             <q-item class="q-pa-sm text-bold text-blue-7">{{ predmet.naziv_predmeta }} </q-item>
             <q-item>Početna cijena: {{ predmet.pocetna_cijena }}$</q-item>
             <q-item>Vrijeme pocetka: {{ formattedDate(predmet.vrijeme_pocetka) }}</q-item>
@@ -42,6 +42,11 @@
             <q-item>Preostalo vrijeme aukcije: {{ predmet.preostalo_vrijeme }} h </q-item>
             <q-item>Trenutna cijena: {{ predmet.trenutna_cijena }}$</q-item>
           </q-item-section>
+          <q-separator dark />
+          <q-card-actions>
+            <q-btn flat color="primary" @click="izmijeniPredmet(predmet.id_predmeta)">Izmijeni</q-btn>
+            <q-btn flat color="negative" @click="obrisiPredmet(predmet.id_predmeta)">Obriši</q-btn>
+          </q-card-actions>
         </q-card>
       </div>
     </div>
@@ -220,37 +225,57 @@ export default {
 
       // Fetch user data using user ID
       const userData = await this.fetchUserData(userId);
-
+      const headers = { Authorization: `Bearer ${token}` };
       // Update the component's data with the fetched user data
       this.korisnik_trenutno = userData;
 
-      const headers = { Authorization: `Bearer ${token}` };
-      axios
-        .get("http://localhost:3000/api/vlastiti-predmeti/" + userId, { headers })
-        .then((response) => {
-            if(response.data.length===0) {
-              this.$refs.nema_predmete.textContent = "Nemate niti jedan predmet koji je ili je bio na aukciji!";
-            } else {
-              this.vlastitiPredmeti = response.data;
-            }
-        });
+      this.dohvatPredmeta(userId, headers);
     } catch (error) {
       console.error("Greška kod dohvaćanja vlastitih predmeta:", error);
     }
   },
 
   methods: {
+
+    async dohvatPredmeta(userId, headers) {
+      await axios
+        .get("http://localhost:3000/api/vlastiti-predmeti/" + userId, { headers })
+        .then((response) => {
+          if (response.data.length === 0) {
+            this.$refs.nema_predmete.textContent = "Nemate niti jedan predmet koji je ili je bio na aukciji!";
+          } else {
+            this.vlastitiPredmeti = response.data;
+          }
+        })},
+
     formattedDate(dateString) {
       return new Date(dateString).toLocaleString("hr-HR").replace(",", "");
     },
-    navigateToItem(id_predmeta) {
+    pregledPredmeta(id_predmeta) {
       this.$router.push({ path: "prikaz", query: { id_predmeta } });
     },
-    izmijeniPredmet(predmet) {
-      // Funkcija za uređivanje predmeta na aukciji
+    izmijeniPredmet(id_predmeta) {
+
     },
-    obrisiPredmet(predmet) {
-      // Funkcija za brisanje predmeta na aukciji
+    async obrisiPredmet(id_predmeta) { //bilo bi dobro imat uvjet da se ne mogu brisat izvedene ili aukcije u tijeku
+      const token = localStorage.getItem("token");
+      const userId = this.getUserIdFromToken(token);
+      const headers = { Authorization: `Bearer ${token}` };
+      if (window.confirm('Jeste li sigurni da želite obrisati predmet?')) {
+        try {
+          const response = await axios.delete("http://localhost:3000/api/brisanjePredmeta/" + id_predmeta, { headers });
+
+          this.$q.notify({
+            color: "positive",
+            position: "top",
+            message: "Brisanje podataka uspješno!",
+          });
+
+          this.dohvatPredmeta(userId, headers);
+        } catch (error) {
+          console.log("Greška pri brisanju predmeta: " + error);
+        }
+      }
     },
     editBid(bid) {
       // Funkcija za uređivanje bid-a na aukciji
