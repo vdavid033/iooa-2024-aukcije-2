@@ -255,7 +255,7 @@ export default {
       this.$router.push({ path: "prikaz", query: { id_predmeta } });
     },
     izmijeniPredmet(id_predmeta) {
-
+      this.$router.push({ path: "izmjena_predmeta", query: { id_predmeta } });
     },
     async obrisiPredmet(id_predmeta) { //bilo bi dobro imat uvjet da se ne mogu brisat izvedene ili aukcije u tijeku
       const token = localStorage.getItem("token");

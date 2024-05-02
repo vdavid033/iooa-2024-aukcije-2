@@ -417,3 +417,17 @@ app.delete("/api/brisanjePredmeta/:id", authJwt.verifyTokenUser, (req, res) => {
   })
 })
 
+app.put("/api/izmjenaPredmeta/:id", authJwt.verifyTokenUser, (req, res) => {
+
+  connection.query("UPDATE predmet SET naziv_predmeta = ?, opis_predmeta = ?, pocetna_cijena = ?, vrijeme_pocetka = ?, vrijeme_zavrsetka = ?, id_kategorije = ? WHERE id_predmeta = ?")
+})
+
+app.get("/api/get-predmet2/:id", (req, res) => {
+  const { id } = req.params;
+  //TU OVU ZAGRADICU PA RUCNO ZA SVAKI SLUCAJ NA KRAJU ONO []
+  connection.query("SELECT id_predmeta, naziv_predmeta, opis_predmeta, pocetna_cijena, vrijeme_pocetka, vrijeme_zavrsetka, id_kategorije FROM predmet WHERE id_predmeta = ?", [id], (error, results) => {
+    if (error) throw error;
+    res.send(results);
+  });
+});
+
