@@ -41,7 +41,7 @@
               </q-carousel>
             </template>
             <template v-else>
-              <q-img v-if="showSingleImage" :src="(item.slike ? item.slike[0] : item.slika)" />
+              <q-img v-if="showSingleImage" :src="item.slike ? item.slike[0] : item.slika" />
             </template>
           </q-card-section>
         </div>
@@ -98,6 +98,7 @@
         </q-card-section>
 
         <q-card-actions align="right" class="bg-white text-teal">
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
           <q-btn flat label="Potvrdi ponudu" @click="potvrdiPonudu" />
         </q-card-actions>
       </q-card>
@@ -105,6 +106,7 @@
   </div>
 </template>
 <script>
+import { jwtDecode } from "jwt-decode";
 import { ref } from "vue";
 import axios from "axios";
 
@@ -125,7 +127,7 @@ export default {
       item: [],
       showDialog: false,
       odabranaCijena: null,
-      prices: [{ label: "100 €" }, { label: "200 €" }, { label: "300 €" }, { label: "400 €" }, { label: "500 €" }, { label: "1000 €" }],
+      prices: [],
       potvrdjenaCijena: null,
       predmet: {
         id_ponude: null,
@@ -140,14 +142,10 @@ export default {
     };
   },
   mounted() {
-    axios.get(baseUrl + "get-predmet-trenutna-cijena/" + this.id_predmeta, {}).then((response) => {
-      this.item = response.data[0];
-    });
-
     axios.get(baseUrl + "get-predmet/" + this.id_predmeta, {}).then((response) => {
       this.item = response.data[0];
       this.potvrdjenaCijena = this.item.pocetna_cijena;
-
+      this.item.trenutna_cijena = this.item.pocetna_cijena;
       if (this.item.slike && this.item.slike.length > 0) {
         if (this.item.slike.length === 1) {
           // If there's only one image, showSingleImage should be true
@@ -159,6 +157,38 @@ export default {
         }
       }
     });
+
+    axios.get(baseUrl + "get-predmet-trenutna-cijena/" + this.id_predmeta, {}).then((response) => {
+      if (response.data.max_vrijednost_ponude != null) {
+        this.item.trenutna_cijena = response.data.max_vrijednost_ponude;
+      }
+      this.prices = [
+        {
+          label: (this.item.trenutna_cijena * 1.1).toFixed(2) + " $",
+          value: (this.item.trenutna_cijena * 1.1).toFixed(2),
+        },
+        {
+          label: (this.item.trenutna_cijena * 1.2).toFixed(2) + " $",
+          value: (this.item.trenutna_cijena * 1.2).toFixed(2),
+        },
+        {
+          label: (this.item.trenutna_cijena * 1.3).toFixed(2) + " $",
+          value: (this.item.trenutna_cijena * 1.3).toFixed(2),
+        },
+        {
+          label: (this.item.trenutna_cijena * 1.4).toFixed(2) + " $",
+          value: (this.item.trenutna_cijena * 1.4).toFixed(2),
+        },
+        {
+          label: (this.item.trenutna_cijena * 1.5).toFixed(2) + " $",
+          value: (this.item.trenutna_cijena * 1.5).toFixed(2),
+        },
+        {
+          label: (this.item.trenutna_cijena * 2).toFixed(2) + " $",
+          value: (this.item.trenutna_cijena * 2).toFixed(2),
+        },
+      ];
+    });
   },
 
   methods: {
@@ -166,39 +196,43 @@ export default {
       return new Date(dateString).toLocaleString("hr-HR").replace(",", "");
     },
     potvrdiPonudu() {
+      // Get the JWT token from local storage
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const decodedToken = jwtDecode(token);
+
+      console.log(this.odabranaCijena.value);
       if (this.odabranaCijena) {
         // Increase the current price based on the selected value
-        const selectedPrice = parseInt(this.odabranaCijena.label);
-        const currentPrice = parseInt(this.potvrdjenaCijena);
-        const newPrice = currentPrice + selectedPrice;
+        const selectedPrice = parseInt(this.odabranaCijena.value);
 
-        // Update the displayed price
-        this.potvrdjenaCijena = newPrice;
+        if (selectedPrice > this.item.trenutna_cijena) {
+          const currentDate = new Date();
+          const formattedTime = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()} ${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
 
-        const currentDate = new Date();
-        const formattedTime = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()} ${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
+          const podaciPonude = {
+            id_predmeta: this.id_predmeta,
+            vrijednost_ponude: selectedPrice,
+            vrijeme_ponude: formattedTime,
+            id_korisnika: decodedToken.id,
+          };
 
-        const podaciPonude = {
-          id_predmeta: this.id_predmeta,
-          vrijednost_ponude: this.potvrdjenaCijena,
-          id_ponude: this.id_ponude,
-          vrijeme_ponude: formattedTime,
-          id_korisnika: 4,
-        };
-
-        axios
-          .post("http://localhost:3000/unostrenutnaponuda", podaciPonude)
-          .then((response) => {
-            console.log("New price stored successfully:", response.data);
-            // Handle the response data
-          })
-          .catch((error) => {
-            console.error("Error storing new price:", error);
-            // Handle the error
-          });
-
-        // Close the dialog
-        this.showDialog = false;
+          axios
+            .post("http://localhost:3000/unostrenutnaponuda", podaciPonude, { headers })
+            .then((response) => {
+              console.log("New price stored successfully:", response.data);
+              // Handle the response data
+            })
+            .catch((error) => {
+              console.error("Error storing new price:", error);
+              // Handle the error
+            });
+          // Update the displayed price
+          this.item.trenutna_cijena = selectedPrice;
+          // Close the dialog
+          this.showDialog = false;
+        }
       }
     },
   },

@@ -81,8 +81,35 @@ app.post("/unosPredmeta", upload.none(), authJwt.verifyTokenUser, function (requ
 });
 
 app.get("/api/all-predmet", (req, res) => {
-  connection.query("SELECT p.id_predmeta, p.opis_predmeta, p.naziv_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, CONCAT( FLOOR(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) / (24*3600)), ' dana, ', TIME_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) % (24*3600)), '%H:%i:%s') ) AS preostalo_vrijeme, (SELECT slika FROM slika WHERE id_predmeta = p.id_predmeta LIMIT 1) AS slika FROM predmet p WHERE p.vrijeme_zavrsetka > NOW() ORDER BY preostalo_vrijeme DESC;", (error, results) => {
-    if (error) throw error;
+  const query = `
+    SELECT
+        p.id_predmeta,
+        p.opis_predmeta,
+        p.naziv_predmeta,
+        p.pocetna_cijena,
+        p.vrijeme_pocetka,
+        p.vrijeme_zavrsetka,
+        CONCAT(
+            FLOOR(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) / (24 * 3600)),
+            ' dana, ',
+            TIME_FORMAT(
+                SEC_TO_TIME(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) % (24 * 3600)),
+                '%H:%i:%s'
+            )
+        ) AS preostalo_vrijeme,
+        (SELECT slika FROM slika WHERE id_predmeta = p.id_predmeta LIMIT 1) AS slika,
+        COALESCE(MAX(po.vrijednost_ponude), p.pocetna_cijena) AS trenutna_cijena
+    FROM predmet p
+    LEFT JOIN ponuda po ON p.id_predmeta = po.id_predmeta
+    WHERE p.vrijeme_zavrsetka > NOW()
+    GROUP BY p.id_predmeta
+    ORDER BY preostalo_vrijeme DESC;
+  `;
+
+  connection.query(query, (error, results) => {
+    if (error) {
+      throw error;
+    }
     res.send(results);
   });
 });
@@ -91,7 +118,7 @@ app.get("/api/get-predmet/:id", (req, res) => {
   const { id } = req.params;
 
   connection.query(
-    `SELECT p.naziv_predmeta, p.id_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, TIME_FORMAT( SEC_TO_TIME(TIMESTAMPDIFF(SECOND, p.vrijeme_pocetka, p.vrijeme_zavrsetka)), '%H:%i:%s' ) AS preostalo_vrijeme, p.opis_predmeta, COALESCE(MAX(po.vrijednost_ponude), p.pocetna_cijena) AS vrijednost_ponude, GROUP_CONCAT(s.slika SEPARATOR '|||') AS slike
+    `SELECT p.naziv_predmeta, p.id_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, TIME_FORMAT( SEC_TO_TIME(TIMESTAMPDIFF(SECOND, p.vrijeme_pocetka, p.vrijeme_zavrsetka)), '%H:%i:%s' ) AS preostalo_vrijeme, p.opis_predmeta, COALESCE(MAX(po.vrijednost_ponude), p.pocetna_cijena) AS vrijednost_ponude, GROUP_CONCAT(DISTINCT s.slika SEPARATOR '|||') AS slike
     FROM predmet p 
     LEFT JOIN ponuda po ON p.id_predmeta = po.id_predmeta 
     LEFT JOIN slika s ON p.id_predmeta = s.id_predmeta 
@@ -144,14 +171,14 @@ app.get("/api/all-kategorija", (req, res) => {
   });
 });
 
-app.get("/api/get-predmet/:id", (req, res) => {
+/* app.get("/api/get-predmet/:id", (req, res) => {
   const { id } = req.params;
 
   connection.query("SELECT id_predmeta, naziv_predmeta,pocetna_cijena, vrijeme_pocetka, vrijeme_zavrsetka, TIME_FORMAT( SEC_TO_TIME(TIMESTAMPDIFF(SECOND, NOW(), vrijeme_zavrsetka)), '%H:%i:%s' ) AS preostalo_vrijeme FROM predmet WHERE id_predmeta = ?", [id], (error, results) => {
     if (error) throw error;
     res.send(results);
   });
-});
+}); */
 
 app.get("/api/get-ponuda/:id", (req, res) => {
   const { id } = req.params;
@@ -163,14 +190,14 @@ app.get("/api/get-ponuda/:id", (req, res) => {
 });
 
 app.post("/unostrenutnaponuda", authJwt.verifyTokenUser, function (request, response) {
-  console.log("radi unos trenutna ponuda");
   const data = request.body;
-  const ponuda = [[data.id_ponude, data.vrijednost_ponude, data.vrijeme_ponude, data.id_korisnika, data.id_predmeta]];
-  connection.query("INSERT INTO ponuda (id_ponude, vrijednost_ponude, vrijeme_ponude, id_korisnika, id_predmeta) VALUES ?", [ponuda], function (error, results, fields) {
+  const ponuda = [[data.vrijednost_ponude, data.vrijeme_ponude, data.id_korisnika, data.id_predmeta]];
+  connection.query("INSERT INTO ponuda (vrijednost_ponude, vrijeme_ponude, id_korisnika, id_predmeta) VALUES ?", [ponuda], function (error, results, fields) {
     if (error) throw error;
     return response.send({ error: false, data: results, message: "Dodana je trenutna ponuda." });
   });
 });
+
 app.post("/api/unos-slike", authJwt.verifyTokenUser, function (req, res) {
   const data = req.body;
   const slika = data.slika;
@@ -198,12 +225,18 @@ app.get("/api/all-predmet-with-current-price", (req, res) => {
     res.send(results);
   });
 });
+
 app.get("/api/get-predmet-trenutna-cijena/:id", (req, res) => {
   const { id } = req.params;
-  connection.query("SELECT p.id_predmeta, p.naziv_predmeta, p.opis_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, TIME_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka)), '%H:%i:%s') AS preostalo_vrijeme, COALESCE(po.trenutna_cijena, p.pocetna_cijena) AS trenutna_cijena FROM predmet p LEFT JOIN (SELECT id_predmeta, MAX(vrijednost_ponude) AS trenutna_cijena FROM ponuda GROUP BY id_predmeta) po ON p.id_predmeta = po.id_predmeta WHERE p.id_predmeta = ?", [id], (error, results) => {
-    if (error) throw error;
-
-    res.send(results);
+  connection.query("SELECT MAX(`vrijednost_ponude`) AS max_vrijednost_ponude FROM `ponuda` WHERE id_predmeta = ?", [id], (error, results) => {
+    if (error) {
+      return res.status(500).send({ error: "Database error" });
+    }
+    if (results && results.length > 0) {
+      res.send({ max_vrijednost_ponude: results[0].max_vrijednost_ponude });
+    } else {
+      res.status(404).send({ message: "No offers found for the given id_predmeta" });
+    }
   });
 });
 
@@ -291,7 +324,8 @@ app.get("/api/korisnikinfo1/:id", (req, res) => {
 app.put("/api/izmjenakorisnika/", authJwt.verifyTokenAdmin, (req, res) => {
   korisnik = req.body;
 
-  if (korisnik.lozinka_izmijenjena) { //ako nova lozinka JE unesena
+  if (korisnik.lozinka_izmijenjena) {
+    //ako nova lozinka JE unesena
     const saltRounds = 10;
     bcrypt.hash(korisnik.lozinka_korisnika, saltRounds, function (err, hash) {
       if (err) {
@@ -303,7 +337,8 @@ app.put("/api/izmjenakorisnika/", authJwt.verifyTokenAdmin, (req, res) => {
         res.send(results);
       });
     });
-  } else { //ako lozinka nije unesena
+  } else {
+    //ako lozinka nije unesena
     connection.query("UPDATE korisnik SET ime_korisnika = ?, prezime_korisnika = ?, email_korisnika = ?, lozinka_korisnika = ?, adresa_korisnika = ? WHERE id_korisnika = ?", [korisnik.ime_korisnika, korisnik.prezime_korisnika, korisnik.email_korisnika, korisnik.lozinka_korisnika, korisnik.adresa_korisnika, korisnik.id_korisnika], (error, results) => {
       if (error) throw error;
       res.send(results);
@@ -388,39 +423,33 @@ app.delete("/api/deleteKategoriju/:id", authJwt.verifyTokenAdmin, (req, res) => 
     if (error) {
       console.error("Neuspješno brisanje.");
       return res.status(500).json({ error: true, message: "Neuspješno brisanje " + idKat });
-
     }
     console.log("Brisanje uspješno.");
     return res.send({ error: false, message: "Kategorija uspješno obrisana." });
-  })
-
+  });
 });
 
 app.get("/api/vlastiti-predmeti/:id", authJwt.verifyTokenUser, (req, res) => {
-
   connection.query("SELECT p.id_predmeta, p.opis_predmeta, p.naziv_predmeta, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, CONCAT( FLOOR(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) / (24*3600)), ' dana, ', TIME_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, NOW(), p.vrijeme_zavrsetka) % (24*3600)), '%H:%i:%s') ) AS preostalo_vrijeme, (SELECT slika FROM slika WHERE id_predmeta = p.id_predmeta LIMIT 1) AS slika FROM predmet p WHERE id_korisnika = ? ORDER BY preostalo_vrijeme DESC;", [req.params.id], (error, results) => {
     if (error) throw error;
     res.send(results);
   });
-})
+});
 
 app.delete("/api/brisanjePredmeta/:id", authJwt.verifyTokenUser, (req, res) => {
-
   connection.query("DELETE FROM predmet WHERE id_predmeta = ?", [req.params.id], (error, results) => {
     if (error) {
       console.error("Neuspješno brisanje.");
       return res.status(500).json({ error: true, message: "Neuspješno brisanje " + error });
-
     }
     console.log("Brisanje uspješno.");
     return res.send({ error: false, message: "." });
-  })
-})
+  });
+});
 
 app.put("/api/izmjenaPredmeta/:id", authJwt.verifyTokenUser, (req, res) => {
-
-  connection.query("UPDATE predmet SET naziv_predmeta = ?, opis_predmeta = ?, pocetna_cijena = ?, vrijeme_pocetka = ?, vrijeme_zavrsetka = ?, id_kategorije = ? WHERE id_predmeta = ?")
-})
+  connection.query("UPDATE predmet SET naziv_predmeta = ?, opis_predmeta = ?, pocetna_cijena = ?, vrijeme_pocetka = ?, vrijeme_zavrsetka = ?, id_kategorije = ? WHERE id_predmeta = ?");
+});
 
 app.get("/api/get-predmet2/:id", (req, res) => {
   const { id } = req.params;
@@ -430,4 +459,3 @@ app.get("/api/get-predmet2/:id", (req, res) => {
     res.send(results);
   });
 });
-
