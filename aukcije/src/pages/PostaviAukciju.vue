@@ -198,7 +198,24 @@ export default {
     },
 
     async submitForm() {
-      if (!this.files.length) {
+      const requiredFields = [
+        this.naziv_predmeta,
+        this.opis_predmeta,
+        this.pocetna_cijena,
+        this.selectedKategorija
+      ];
+
+      const hasEmptyFields = requiredFields.some(field => !field);
+
+      if (hasEmptyFields) {
+        this.$q.notify({
+          color: "negative",
+          position: "top",
+          message: "Niste ispunili sva polja",
+          icon: "warning",
+        });
+        return;
+      } else if (!this.files.length) {
         this.$q.notify({
           color: "negative",
           position: "top",
