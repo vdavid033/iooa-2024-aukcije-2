@@ -14,7 +14,7 @@
         <q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space /><q-space />
         <template v-if="isAuthenticated()">
           <div class="q-pa-md">
-            <q-btn-dropdown color="primary" :label="`${userIme} ${userPrezime}`">
+            <q-btn-dropdown  ripple="false" stretch flat text-color="white" color="primary" :label="`${userIme} ${userPrezime}`" >
               <q-list>
                 <router-link to="/Moj_profil" class="link-style" @click="toggleLeftDrawerClose">
                   <q-item clickable v-close-popup @click="onItemClick">

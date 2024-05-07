@@ -1,9 +1,9 @@
 <template>
   <q-card>
     <div class="row justify-center q-pa-md">
-      <q-input v-model="Pretrazivanje" filled placeholder="Pretraži aukcije" dense class="q-input--width" />
+      <q-input v-model="Pretrazivanje" filled placeholder="Pretraži aukcije" dense class="q-input--width " />
       <div style="width: 227px">
-        <q-select filled lazy-rules emit-value v-model="selectedsortianje" label="Sortiraj po" :options="sortiranje" option-label="label" option-value="value" map-options @update:model-value="sortiranjeOpcija" />
+        <q-select filled dense lazy-rules emit-value v-model="selectedsortianje" label="Sortiraj po" :options="sortiranje" option-label="label" option-value="value" map-options @update:model-value="sortiranjeOpcija" class="custom-height" />
       </div>
     </div>
     <q-separator class="separator" />
@@ -20,7 +20,7 @@
 
     <q-item class="q-pa-sm text-bold text-blue-7" style="font-size: 30px">Zadnje ili trenutne aukcije </q-item>
     <div class="q-pa-sm row flex flex-center">
-      <div v-for="item in filteredItems" :key="item.id_predmeta" class="q-pa-md" style="width: 400px">
+      <div v-for="item in filteredItems" :key="item.id_predmeta" class="q-pa-md" style="width: 400px;">
         <q-card @click="navigateToItem(item.id_predmeta)">
           <q-img v-if="item.slika" :src="item.slika" no-native-menu />
           <q-item-section>

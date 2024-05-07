@@ -9,26 +9,7 @@
       </div>
     </q-card-section>
     <q-separator color="red" />
-    <div class="q-ml-sm flex flex-start q-gutter-sm">
-      <div style="width: 500px">
-        <q-field rounded filled label="Naziv proizvoda" stack-label>
-          <template v-slot:control>
-            <div class="self-center full-width no-outline" tabindex="0">
-              {{ item.naziv_predmeta }}
-            </div>
-          </template>
-        </q-field>
-      </div>
-      <div style="width: 500px">
-        <q-field rounded filled label="Početna cijena proizvoda" stack-label>
-          <template v-slot:control>
-            <div class="self-center full-width no-outline" tabindex="0">
-              {{ item.pocetna_cijena + "$" }}
-            </div>
-          </template>
-        </q-field>
-      </div>
-    </div>
+
     <div class="q-pa-sm col flex flex-start q-gutter-sm">
       <div class="row flex flex-center">
         <div style="width: 600px">
@@ -47,40 +28,60 @@
         </div>
       </div>
       <div class="q-ml-sm col flex flex-start q-gutter-sm">
-        <div style="width: 400px">
-          <q-field rounded filled label="Početno vrijeme aukcije" stack-label>
-            <template v-slot:control>
-              <div class="self-center full-width no-outline" tabindex="0">
-                {{ formattedDate(item.vrijeme_pocetka) }}
-              </div>
-            </template>
-          </q-field>
-        </div>
+        <div class="q-ml-sm flex flex-start q-gutter-sm">
+          <div style="width: 80%">
+            <q-field filled label="Naziv proizvoda" stack-label>
+              <template v-slot:control>
+                <div class="self-center full-width no-outline" tabindex="0">
+                  {{ item.naziv_predmeta }}
+                </div>
+              </template>
+            </q-field>
+          </div>
+          <div style="width: 80%">
+            <q-field filled label="Opis proizvoda" stack-label>
+              <template v-slot:control>
+                <div class="self-center full-width no-outline" tabindex="0">
+                  {{ item.opis_predmeta }}
+                </div>
+              </template>
+            </q-field>
+          </div>
+          <div style="width: 40%">
+            <q-field filled label="Početno vrijeme aukcije" stack-label>
+              <template v-slot:control>
+                <div class="self-center full-width no-outline" tabindex="0">
+                  {{ formattedDate(item.vrijeme_pocetka) }}
+                </div>
+              </template>
+            </q-field>
+          </div>
 
-        <div style="width: 400px">
-          <q-field rounded filled label="Završno vrijeme aukcije" stack-label>
-            <template v-slot:control>
+          <div style="width: 39.5%">
+            <q-field filled label="Završno vrijeme aukcije" stack-label>
+              <template v-slot:control>
+                <div class="self-center full-width no-outline" tabindex="0">
+                  {{ formattedDate(item.vrijeme_zavrsetka) }}
+                </div>
+              </template>
+            </q-field>
+          </div>
+          <div style="width: 40%">
+            <q-field filled label="Početna cijena proizvoda" stack-label>
+              <template v-slot:control>
+                <div class="self-center full-width no-outline" tabindex="0">
+                  {{ item.pocetna_cijena + "$" }}
+                </div>
+              </template>
+            </q-field>
+          </div>
+          <div style="width: 39.5%">
+            <q-field filled label="Trenutna cijena " stack-label>
               <div class="self-center full-width no-outline" tabindex="0">
-                {{ formattedDate(item.vrijeme_zavrsetka) }}
+                {{ item.trenutna_cijena + "$" }}
               </div>
-            </template>
-          </q-field>
-        </div>
-        <div style="width: 600px">
-          <q-field rounded filled label="Opis proizvoda" stack-label>
-            <template v-slot:control>
-              <div class="self-center full-width no-outline" tabindex="0">
-                {{ item.opis_predmeta }}
-              </div>
-            </template>
-          </q-field>
-        </div>
-        <div style="width: 400px">
-          <q-field rounded filled label="Trenutna cijena " stack-label>
-            <div class="self-center full-width no-outline" tabindex="0">
-              {{ item.trenutna_cijena + "$" }}
-            </div>
-          </q-field>
+            </q-field>
+          </div>
         </div>
       </div>
     </div>
@@ -94,7 +95,7 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <q-select rounded outlined v-model="odabranaCijena" :options="prices" label="Odaberi cijenu" />
+          <q-select outlined v-model="odabranaCijena" :options="prices" label="Odaberi cijenu" />
         </q-card-section>
 
         <q-card-actions align="right" class="bg-white text-teal">
