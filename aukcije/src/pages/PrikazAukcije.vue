@@ -47,7 +47,7 @@
               </template>
             </q-field>
           </div>
-          <div style="width: 40%">
+          <div style="width: 39.5%">
             <q-field filled label="Početno vrijeme aukcije" stack-label>
               <template v-slot:control>
                 <div class="self-center full-width no-outline" tabindex="0">
@@ -66,7 +66,7 @@
               </template>
             </q-field>
           </div>
-          <div style="width: 40%">
+          <div style="width: 39.5%">
             <q-field filled label="Početna cijena proizvoda" stack-label>
               <template v-slot:control>
                 <div class="self-center full-width no-outline" tabindex="0">

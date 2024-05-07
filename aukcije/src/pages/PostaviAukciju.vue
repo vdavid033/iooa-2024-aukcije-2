@@ -21,7 +21,7 @@
       </div>
     </div>
     <div class="q-ml-sm flex flex-start q-gutter-sm">
-      <div style="width: 300px">
+      <div style="width: 500px">
         <q-input filled v-model="vrijemePocetka" label="Datum i vrijeme početka aukcije">
           <template v-slot:prepend>
             <q-icon name="event" class="cursor-pointer">
@@ -49,7 +49,7 @@
         </q-input>
       </div>
 
-      <div style="width: 300px">
+      <div style="width: 500px">
         <q-input filled v-model="vrijemeZavrsetka" label="Datum i vrijeme završetka aukcije">
           <template v-slot:prepend>
             <q-icon name="event" class="cursor-pointer">
@@ -76,14 +76,17 @@
           </template>
         </q-input>
       </div>
+      <div style="width: 500px">
+        <q-input ref="opisPredmetaRef" filled type="text" label="Opis proizvoda" v-model="opis_predmeta" lazy-rules :rules="[(val) => (val !== null && val !== '') || 'Unesite opis']" />
+      </div>
     </div>
 
-    <div style="width: 500px">
-      <q-input ref="opisPredmetaRef" filled type="text" label="Opis proizvoda" v-model="opis_predmeta" lazy-rules :rules="[(val) => (val !== null && val !== '') || 'Unesite opis']" />
-    </div>
 
     <div>
-      <input type="file" name="files" accept="image/*" @change="onFileChange" multiple />
+      <br>
+      <p style="font-size: 16px;" class="q-pl-md">Unesite sliku: </p>
+      <br>
+      <input class="q-pl-md" type="file" name="files" accept="image/*" @change="onFileChange" multiple />
 
       <q-separator></q-separator>
       <div v-if="base64Image">
