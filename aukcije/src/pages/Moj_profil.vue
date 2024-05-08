@@ -51,9 +51,26 @@
       </div>
     </div>
 
-    <!-- predmeti na koje je korisnik postavio bid -->
+    <!-- ponude korisnika -->
     <h3>Vaše ponude</h3>
-    <q-card-group class="card-group">
+    <p ref="nema_predmete"></p>
+    <div class="q-pa-sm row flex flex-center">
+  <div v-for="ponuda in vlastitePonude" :key="ponuda.id_ponude" class="q-pa-md" style="width: 400px">
+    <q-card>
+      <q-item-section>
+        <q-img v-if="ponuda.slika" :src="ponuda.slika" no-native-menu />
+        <q-item class="q-pa-sm text-bold text-blue-7">{{ ponuda.naziv_predmeta }} </q-item>
+        <q-item>Opis: {{ ponuda.opis_predmeta }}$</q-item>
+        <q-item>vrijednost_ponude: {{ ponuda.vrijednost_ponude }}$</q-item>
+        <q-item>Vrijeme postavljanja ponude: {{ formattedDate(ponuda.vrijeme_ponude) }}</q-item>
+      </q-item-section>
+      <q-separator dark />
+    </q-card>
+  </div>
+</div>
+
+
+    <!--<q-card-group class="card-group">
       <q-card-row class="q-ml-sm flex flex-start q-gutter-sm">
         <q-card-column>
           <q-card class="card">
@@ -67,8 +84,10 @@
               <q-btn color="negative" label="Obriši" @click="deleteBid(bid)" />
             </q-card-section>
           </q-card>
-        </q-card-column>
-        <q-card-column>
+        </q-card-column>-->
+        <!-- ponude korisnika -->
+        
+        <!--<q-card-column>
           <q-card class="card">
             <img class="card-img-top" src="" alt="">
             <q-card-section>
@@ -134,7 +153,7 @@
           </q-card>
         </q-card-column>
       </q-card-row>
-    </q-card-group>
+    </q-card-group>-->
     <!--<q-card v-for="bid in userBids" :key="bid._id">
       <q-card-section>
         <h4>{{ bid.item.name }}</h4>
@@ -212,6 +231,7 @@ export default {
         adresa_korisnika: ""
       },
       vlastitiPredmeti: [],
+      vlastitePonude: [],
     }
   },
 
@@ -230,6 +250,7 @@ export default {
       this.korisnik_trenutno = userData;
 
       this.dohvatPredmeta(userId, headers);
+      this.dohvatPonude(userId, headers);
     } catch (error) {
       console.error("Greška kod dohvaćanja vlastitih predmeta:", error);
     }
@@ -277,6 +298,22 @@ export default {
         }
       }
     },
+    async dohvatPonude(userId, headers) {
+  await axios
+    .get("http://localhost:3000/api/vlastita-ponuda-korisnik/" + userId, { headers })
+    .then((response) => {
+      console.log("API Data:", response.data); // Log API data
+      if (response.data.length === 0) {
+        this.$refs.nema_predmete.textContent = "Nemate niti jednu ponudu koji je ili je bio na aukciji!";
+      } else {
+        this.vlastitePonude = response.data;
+      }
+    })
+    .catch((error) => {
+      console.error("API Error:", error); 
+    });
+},
+
     editBid(bid) {
       // Funkcija za uređivanje bid-a na aukciji
     },

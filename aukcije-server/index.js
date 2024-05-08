@@ -198,6 +198,24 @@ app.post("/unostrenutnaponuda", authJwt.verifyTokenUser, function (request, resp
   });
 });
 
+app.get("/api/vlastita-ponuda-korisnik/:id", (req, res) => {
+  const { id } = req.params;
+
+  connection.query(
+    `SELECT ponuda.*, predmet.*, slika.slika 
+    FROM ponuda 
+    INNER JOIN predmet ON ponuda.id_predmeta = predmet.id_predmeta 
+    LEFT JOIN slika ON predmet.id_predmeta = slika.id_predmeta 
+    WHERE predmet.id_korisnika = ?`,
+    [id],
+    (error, results) => {
+      if (error) throw error;
+      res.json(results);
+    }
+  );
+});
+
+
 app.post("/api/unos-slike", authJwt.verifyTokenUser, function (req, res) {
   const data = req.body;
   const slika = data.slika;
