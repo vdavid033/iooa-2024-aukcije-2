@@ -93,7 +93,6 @@
         <q-card-section>
           <div class="text-h6">Ponudi</div>
         </q-card-section>
-
         <q-card-section class="q-pt-none">
           <q-select outlined v-model="odabranaCijena" :options="prices" label="Odaberi cijenu" />
         </q-card-section>
@@ -127,7 +126,7 @@ export default {
     return {
       item: [],
       showDialog: false,
-      odabranaCijena: null,
+      odabranaCijena: "",
       prices: [],
       potvrdjenaCijena: null,
       predmet: {
@@ -165,28 +164,32 @@ export default {
       }
       this.prices = [
         {
-          label: (this.item.trenutna_cijena * 1.1).toFixed(2) + " $",
+          label: "+ 10%: " + (this.item.trenutna_cijena * 1.1).toFixed(2) + " $",
           value: (this.item.trenutna_cijena * 1.1).toFixed(2),
         },
         {
-          label: (this.item.trenutna_cijena * 1.2).toFixed(2) + " $",
+          label: "+ 20%: " + (this.item.trenutna_cijena * 1.2).toFixed(2) + " $",
           value: (this.item.trenutna_cijena * 1.2).toFixed(2),
         },
         {
-          label: (this.item.trenutna_cijena * 1.3).toFixed(2) + " $",
+          label: "+ 30%: " + (this.item.trenutna_cijena * 1.3).toFixed(2) + " $",
           value: (this.item.trenutna_cijena * 1.3).toFixed(2),
         },
         {
-          label: (this.item.trenutna_cijena * 1.4).toFixed(2) + " $",
+          label: "+ 40%: " + (this.item.trenutna_cijena * 1.4).toFixed(2) + " $",
           value: (this.item.trenutna_cijena * 1.4).toFixed(2),
         },
         {
-          label: (this.item.trenutna_cijena * 1.5).toFixed(2) + " $",
+          label: "+ 50%: " + (this.item.trenutna_cijena * 1.5).toFixed(2) + " $",
           value: (this.item.trenutna_cijena * 1.5).toFixed(2),
         },
         {
-          label: (this.item.trenutna_cijena * 2).toFixed(2) + " $",
+          label: "+ 100%: " + (this.item.trenutna_cijena * 2).toFixed(2) + " $",
           value: (this.item.trenutna_cijena * 2).toFixed(2),
+        },
+        {
+          label: "Odaberi cijenu sam",
+          value: "Odaberi cijenu sam",
         },
       ];
     });
