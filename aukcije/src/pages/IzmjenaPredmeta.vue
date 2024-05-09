@@ -19,7 +19,7 @@
             <template v-slot:prepend>
               <q-icon name="event" class="cursor-pointer">
                 <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                  <q-date v-model="vrijemePocetka" mask="YYYY-MM-DD HH:mm">
+                  <q-date v-model="predmet_novo.vrijeme_pocetka" mask="YYYY-MM-DD HH:mm">
                     <div class="row items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
                     </div>
@@ -31,7 +31,7 @@
             <template v-slot:append>
               <q-icon name="access_time" class="cursor-pointer">
                 <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                  <q-time v-model="vrijemePocetka" mask="YYYY-MM-DD HH:mm" format24h>
+                  <q-time v-model="predmet_novo.vrijeme_pocetka" mask="YYYY-MM-DD HH:mm" format24h>
                     <div class="row items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
                     </div>
@@ -47,7 +47,7 @@
             <template v-slot:prepend>
               <q-icon name="event" class="cursor-pointer">
                 <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                  <q-date v-model="vrijemeZavrsetka" mask="YYYY-MM-DD HH:mm">
+                  <q-date v-model="predmet_novo.vrijeme_zavrsetka" mask="YYYY-MM-DD HH:mm">
                     <div class="row items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
                     </div>
@@ -59,7 +59,7 @@
             <template v-slot:append>
               <q-icon name="access_time" class="cursor-pointer">
                 <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                  <q-time v-model="date_zavrsetak" mask="YYYY-MM-DD HH:mm" format24h>
+                  <q-time v-model="predmet_novo.vrijeme_zavrsetka" mask="YYYY-MM-DD HH:mm" format24h>
                     <div class="row items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
                     </div>
@@ -145,6 +145,8 @@ export default {
       files: [],
       file: null,
       base64Images: [],
+      vrijemePocetka: "",
+      vrijemeZavrsetka: "",
     };
   },
 
@@ -190,13 +192,17 @@ export default {
       });
     },
 
+    formattedDate(dateString) {
+      return new Date(dateString).toLocaleString("hr-HR").replace(",", "");
+    },
+
     async ispisiPodatke() {
       try {
         this.$refs.p_naziv.textContent = "Trenutni naziv predmeta: " + this.item.naziv_predmeta;
         this.$refs.p_opis.textContent = "Trenutni opis: " + this.item.opis_predmeta;
         this.$refs.p_pocCijena.textContent = "Trenutna početna cijena: " + this.item.pocetna_cijena;
-        this.$refs.p_datumPoc.textContent = "Trenutni datum i vrijeme početka: " + this.item.vrijeme_pocetka;
-        this.$refs.p_datumZavrs.textContent = "Trenutni datum i vrijeme završetka: " + this.item.vrijeme_zavrsetka;
+        this.$refs.p_datumPoc.textContent = "Trenutni datum i vrijeme početka: " + this.formattedDate(this.item.vrijeme_pocetka);
+        this.$refs.p_datumZavrs.textContent = "Trenutni datum i vrijeme završetka: " + this.formattedDate(this.item.vrijeme_zavrsetka);
         this.$refs.h_predmet.textContent = "Predmet " + this.item.naziv_predmeta;
         this.$refs.p_kategorija.textContent = "Trenutna kategorija: " + this.kategorije.find(kategorija => kategorija.key === this.item.id_kategorije)['label'];
       } catch (error) {
@@ -232,8 +238,16 @@ export default {
       if (this.predmet_novo.naziv_predmeta == "") this.predmet_novo.naziv_predmeta = this.item.naziv_predmeta;
       if (this.predmet_novo.opis_predmeta == "") this.predmet_novo.opis_predmeta = this.item.opis_predmeta;
       if (this.predmet_novo.pocetna_cijena == "") this.predmet_novo.pocetna_cijena = this.item.pocetna_cijena;
-      if (this.predmet_novo.vrijeme_pocetka == "") this.predmet_novo.vrijeme_pocetka = this.item.vrijeme_pocetka;
-      if (this.predmet_novo.vrijeme_zavrsetka == "") this.predmet_novo.vrijeme_zavrsetka = this.item.vrijeme_zavrsetka;
+      if (this.predmet_novo.vrijeme_pocetka == "") {
+        this.predmet_novo.vrijeme_pocetka = this.item.vrijeme_pocetka;
+      } else {
+        this.predmet_novo.vrijeme_pocetka = new Date(this.predmet_novo.vrijeme_pocetka).setHours(new Date(this.predmet_novo.vrijeme_pocetka).getHours() + 2);
+      }
+      if (this.predmet_novo.vrijeme_zavrsetka == "") {
+        this.predmet_novo.vrijeme_zavrsetka = this.item.vrijeme_zavrsetka;
+      } else {
+        this.predmet_novo.vrijeme_zavrsetka = new Date(this.predmet_novo.vrijeme_zavrsetka).setHours(new Date(this.predmet_novo.vrijeme_zavrsetka).getHours() + 2);
+      }
       if (this.predmet_novo.id_kategorije == "") this.predmet_novo.id_kategorije = this.item.id_kategorije;
 
       try {
@@ -248,7 +262,7 @@ export default {
           message: "Izmjena podataka uspješna!",
         });
         await this.dohvatiPredmet(this.id_predmeta, headers);
-        this.ispisiPodatke(this.id_predmeta);
+        await this.ispisiPodatke(this.id_predmeta);
         this.ocistiPolja();
       } catch (error) {
         this.$q.notify({
@@ -263,9 +277,6 @@ export default {
     //od tu nadalje su slike
 
     async obrisiTrenutnuSliku() {
-      console.log(this.item.slike);
-      console.log("INDEX JE TRENUTNI:" + this.index)
-      console.log(this.item);
 
       const idSlikeZaBrisanje = this.item.id_slika[this.index - 1]; //prva slika je 0, a index za nju je 1
 
