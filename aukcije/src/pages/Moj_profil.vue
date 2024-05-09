@@ -61,7 +61,7 @@
         <q-img v-if="ponuda.slika" :src="ponuda.slika" no-native-menu />
         <q-item class="q-pa-sm text-bold text-blue-7">{{ ponuda.naziv_predmeta }} </q-item>
         <q-item>Opis: {{ ponuda.opis_predmeta }}$</q-item>
-        <q-item>vrijednost_ponude: {{ ponuda.vrijednost_ponude }}$</q-item>
+        <q-item>vrijednost ponude: {{ ponuda.vrijednost_ponude }}$</q-item>
         <q-item>Vrijeme postavljanja ponude: {{ formattedDate(ponuda.vrijeme_ponude) }}</q-item>
       </q-item-section>
       <q-separator dark />
