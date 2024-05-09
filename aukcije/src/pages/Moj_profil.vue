@@ -13,13 +13,7 @@
           <p>Trenutni email: {{ korisnik_trenutno.email_korisnika }}</p>
           <p>Trenutna adresa: {{ korisnik_trenutno.adresa_korisnika }}</p>
         </div>
-        <!--<h2>{{ currentUser.name }} {{ currentUser.surname }}</h2>
-        <p>{{ currentUser.dateOfBirth }}</p>
-        <p>{{ currentUser.oib }}</p>-->
-        <!--<h2>Ime i prezime: Ivo Ivic</h2>
-        <p>Datum rođenja: 7.8.1996.</p>
-        <p>E-mail: ivoivic@gmail.com</p>
-        <p>OIB: 12345678908</p>-->
+
       </div>
       <div class="user-info-image">
         <img src="~assets\profilna.png" alt="Profilna slika">
@@ -43,7 +37,7 @@
             <q-item>Trenutna cijena: {{ predmet.trenutna_cijena }}$</q-item>
           </q-item-section>
           <q-separator dark />
-          <q-card-actions>
+          <q-card-actions v-if="provjeriDatum(predmet)">
             <q-btn flat color="primary" @click="izmijeniPredmet(predmet.id_predmeta)">Izmijeni</q-btn>
             <q-btn flat color="negative" @click="obrisiPredmet(predmet.id_predmeta)">Obriši</q-btn>
           </q-card-actions>
@@ -53,7 +47,7 @@
 
     <!-- ponude korisnika -->
     <h3>Vaše ponude</h3>
-    <p ref="nema_predmete"></p>
+    <p ref="nema_ponude"></p>
     <div class="q-pa-sm row flex flex-center">
   <div v-for="ponuda in vlastitePonude" :key="ponuda.id_ponude" class="q-pa-md" style="width: 400px">
     <q-card>
@@ -68,103 +62,6 @@
     </q-card>
   </div>
 </div>
-
-
-    <!--<q-card-group class="card-group">
-      <q-card-row class="q-ml-sm flex flex-start q-gutter-sm">
-        <q-card-column>
-          <q-card class="card">
-            <img class="card-img-top" src="" alt="">
-            <q-card-section>
-              <h5 class="card-title">Rolex Daytona</h5>
-              <p class="card-description">Mehanički ručni sat s automatskim navijanjem, proizveden u Švicarskoj.</p>
-              <p>Vaša ponuda: 200 €</p>
-              <p>Preostalo vrijeme: 10:20:58</p>
-              <q-btn color="primary" label="Uredi" @click="editBid(bid)" />
-              <q-btn color="negative" label="Obriši" @click="deleteBid(bid)" />
-            </q-card-section>
-          </q-card>
-        </q-card-column>-->
-        <!-- ponude korisnika -->
-        
-        <!--<q-card-column>
-          <q-card class="card">
-            <img class="card-img-top" src="" alt="">
-            <q-card-section>
-              <h5 class="card-title">Cartier Tank</h5>
-              <p class="card-description">Elegantni mehanički ručni sat s kožnom narukvicom.</p>
-              <p>Vaša ponuda: 200 €</p>
-              <p>Preostalo vrijeme: 10:20:58</p>
-              <q-btn color="primary" label="Uredi" @click="editBid(bid)" />
-              <q-btn color="negative" label="Obriši" @click="deleteBid(bid)" />
-            </q-card-section>
-          </q-card>
-        </q-card-column>
-        <q-card-column>
-          <q-card class="card">
-            <img class="card-img-top" src="" alt="">
-            <q-card-section>
-              <h5 class="card-title">Breitling Navitimer</h5>
-              <p class="card-description">Mehanički ručni sat s automatskim navijanjem, dizajniran za pilote.</p>
-              <p>Vaša ponuda: 200 €</p>
-              <p>Preostalo vrijeme: 10:20:58</p>
-              <q-btn color="primary" label="Uredi" @click="editBid(bid)" />
-              <q-btn color="negative" label="Obriši" @click="deleteBid(bid)" />
-            </q-card-section>
-          </q-card>
-        </q-card-column>
-        <q-card-column>
-          <q-card class="card">
-            <img class="card-img-top" src="" alt="">
-            <q-card-section>
-              <h5 class="card-title">Breitling Navitimer</h5>
-              <p class="card-description">Mehanički ručni sat s automatskim navijanjem, dizajniran za pilote.</p>
-              <p>Vaša ponuda: 200 €</p>
-              <p>Preostalo vrijeme: 10:20:58</p>
-              <q-btn color="primary" label="Uredi" @click="editBid(bid)" />
-              <q-btn color="negative" label="Obriši" @click="deleteBid(bid)" />
-            </q-card-section>
-          </q-card>
-        </q-card-column>
-        <q-card-column>
-          <q-card class="card">
-            <img class="card-img-top" src="" alt="">
-            <q-card-section>
-              <h5 class="card-title">Breitling Navitimer</h5>
-              <p class="card-description">Mehanički ručni sat s automatskim navijanjem, dizajniran za pilote.</p>
-              <p>Vaša ponuda: 200 €</p>
-              <p>Preostalo vrijeme: 10:20:58</p>
-              <q-btn color="primary" label="Uredi" @click="editBid(bid)" />
-              <q-btn color="negative" label="Obriši" @click="deleteBid(bid)" />
-            </q-card-section>
-          </q-card>
-        </q-card-column>
-        <q-card-column>
-          <q-card class="card">
-            <img class="card-img-top" src="" alt="">
-            <q-card-section>
-              <h5 class="card-title">Breitling Navitimer</h5>
-              <p class="card-description">Mehanički ručni sat s automatskim navijanjem, dizajniran za pilote.</p>
-              <p>Vaša ponuda: 200 €</p>
-              <p>Preostalo vrijeme: 10:20:58</p>
-              <q-btn color="primary" label="Uredi" @click="editBid(bid)" />
-              <q-btn color="negative" label="Obriši" @click="deleteBid(bid)" />
-            </q-card-section>
-          </q-card>
-        </q-card-column>
-      </q-card-row>
-    </q-card-group>-->
-    <!--<q-card v-for="bid in userBids" :key="bid._id">
-      <q-card-section>
-        <h4>{{ bid.item.name }}</h4>
-        <p>Vaša ponuda: {{ bid.bidderBid }} kn</p>
-      </q-card-section>
-      <q-separator />
-      <q-card-actions align="right">
-        <q-btn color="primary" label="Uredi" @click="editBid(bid)" />
-        <q-btn color="negative" label="Obriši" @click="deleteBid(bid)" />
-      </q-card-actions>
-    </q-card>-->
   </div>
 </template>
 
@@ -304,7 +201,7 @@ export default {
     .then((response) => {
       console.log("API Data:", response.data); // Log API data
       if (response.data.length === 0) {
-        this.$refs.nema_predmete.textContent = "Nemate niti jednu ponudu koji je ili je bio na aukciji!";
+        this.$refs.nema_ponude.textContent = "Nemate niti jednu ponudu!";
       } else {
         this.vlastitePonude = response.data;
       }
@@ -341,6 +238,14 @@ export default {
         // If an error occurs, you might want to handle it accordingly
         throw error;
       }
+    },
+
+    provjeriDatum(predmet) {
+      const vrijemePocetka = new Date(predmet.vrijeme_pocetka)
+      if(vrijemePocetka < new Date()) {
+        return false;
+      }
+      return true;
     }
   }
 }
