@@ -206,6 +206,24 @@ app.post("/unostrenutnaponuda", authJwt.verifyTokenUser, function (request, resp
   });
 });
 
+app.get("/api/vlastita-ponuda-korisnik/:id", (req, res) => {
+  const { id } = req.params;
+
+  connection.query(
+    `SELECT ponuda.*, predmet.*, slika.slika 
+    FROM ponuda 
+    INNER JOIN predmet ON ponuda.id_predmeta = predmet.id_predmeta 
+    LEFT JOIN slika ON predmet.id_predmeta = slika.id_predmeta 
+    WHERE predmet.id_korisnika = ?`,
+    [id],
+    (error, results) => {
+      if (error) throw error;
+      res.json(results);
+    }
+  );
+});
+
+
 app.post("/api/unos-slike", authJwt.verifyTokenUser, function (req, res) {
   const data = req.body;
   const slika = data.slika;
@@ -481,14 +499,66 @@ app.delete("/api/brisanjePredmeta/:id", authJwt.verifyTokenUser, (req, res) => {
 });
 
 app.put("/api/izmjenaPredmeta/:id", authJwt.verifyTokenUser, (req, res) => {
-  connection.query("UPDATE predmet SET naziv_predmeta = ?, opis_predmeta = ?, pocetna_cijena = ?, vrijeme_pocetka = ?, vrijeme_zavrsetka = ?, id_kategorije = ? WHERE id_predmeta = ?");
+  const izmjena = req.body;
+
+  izmjena.vrijeme_pocetka = new Date(izmjena.vrijeme_pocetka).toISOString().replace('T', ' ').replace('Z', '');
+  izmjena.vrijeme_zavrsetka = new Date(izmjena.vrijeme_zavrsetka).toISOString().replace('T', ' ').replace('Z', '');
+
+  connection.query(
+    "UPDATE predmet SET naziv_predmeta = ?, opis_predmeta = ?, pocetna_cijena = ?, vrijeme_pocetka = ?, vrijeme_zavrsetka = ?, id_kategorije = ? WHERE id_predmeta = ?",
+    [izmjena.naziv_predmeta, izmjena.opis_predmeta, izmjena.pocetna_cijena, izmjena.vrijeme_pocetka, izmjena.vrijeme_zavrsetka, izmjena.id_kategorije, req.params.id],
+    (error, results) => {
+      if (error) throw error;
+      if (results.length > 0 && results[0].slike) {
+        results[0].slike = results[0].slike.split("|||");
+      }
+      res.send(results);
+    }
+  );
 });
 
-app.get("/api/get-predmet2/:id", (req, res) => {
+app.get("/api/get-predmet2/:id", (req, res) => { //razlika izmedu ovog i obicnog get-predmet je što ovaj lovi i id kategorije i id slika.
   const { id } = req.params;
-  //TU OVU ZAGRADICU PA RUCNO ZA SVAKI SLUCAJ NA KRAJU ONO []
-  connection.query("SELECT id_predmeta, naziv_predmeta, opis_predmeta, pocetna_cijena, vrijeme_pocetka, vrijeme_zavrsetka, id_kategorije FROM predmet WHERE id_predmeta = ?", [id], (error, results) => {
-    if (error) throw error;
-    res.send(results);
+
+  connection.query(
+    `SELECT p.naziv_predmeta, p.id_predmeta, p.id_kategorije, p.pocetna_cijena, p.vrijeme_pocetka, p.vrijeme_zavrsetka, TIME_FORMAT( SEC_TO_TIME(TIMESTAMPDIFF(SECOND, p.vrijeme_pocetka, p.vrijeme_zavrsetka)), '%H:%i:%s' ) AS preostalo_vrijeme, p.opis_predmeta, COALESCE(MAX(po.vrijednost_ponude), p.pocetna_cijena) AS vrijednost_ponude, GROUP_CONCAT(DISTINCT s.id_slike SEPARATOR '|||') AS id_slika, GROUP_CONCAT(DISTINCT s.slika SEPARATOR '|||') AS slike
+    FROM predmet p 
+    LEFT JOIN ponuda po ON p.id_predmeta = po.id_predmeta 
+    LEFT JOIN slika s ON p.id_predmeta = s.id_predmeta 
+    WHERE p.id_predmeta = ? 
+    GROUP BY p.id_predmeta`,
+    [id],
+    (error, results) => {
+      if (error) throw error;
+      if (results.length > 0 && results[0].slike) {
+        results[0].slike = results[0].slike.split("|||");
+        results[0].id_slika = results[0].id_slika.split("|||");
+      }
+      res.send(results);
+    }
+  );
+});
+
+app.delete("/api/brisanjeSlike/:id", authJwt.verifyTokenUser, (req, res) => {
+  connection.query("DELETE FROM slika WHERE id_slike = ?", [req.params.id], (error, results) => {
+    if (error) {
+      console.error("Neuspješno brisanje.");
+      return res.status(500).json({ error: true, message: "Neuspješno brisanje " + error });
+    }
+    return res.send({ error: false, message: "." });
   });
+});
+
+app.post("/api/dodavanjeSlika", upload.none(), authJwt.verifyTokenUser, function (request, response) {
+  const data = request.body;
+  const id_predmeta = data.id_predmeta;
+  Object.keys(data).forEach((key) => {
+    if (key.startsWith("file")) {
+      const base64String = data[key];
+      connection.query("INSERT INTO slika (slika, id_predmeta) VALUES (?, ?)", [base64String, id_predmeta], function (error) {
+        if (error) throw error;
+      });
+    }
+  });
+  return response.send({ error: false, message: "Slike su uspješno dodane." });
 });
