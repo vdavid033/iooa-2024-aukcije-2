@@ -3,9 +3,6 @@
     <q-card-section>
       <div class="text-h3 text-bold text-center text-blue-7 q-ml-sm">
         Postavi aukciju
-        <div class="q-ml-sm flex justify-end q-gutter-sm">
-          <q-btn size="15px" name="send" rel="stylesheet" to="/IndexPage" color="red" label="Natrag" />
-        </div>
       </div>
     </q-card-section>
     <q-separator color="red" />
@@ -102,7 +99,7 @@
     </div>
     <div class="q-ml-sm flex justify-center q-gutter-sm">
       <q-btn label="Postavi" @click="submitForm" color="green" class="q-ml-sm" />
-      <q-btn label="Otkaži" type="submit" color="red" class="q-ml-sm" />
+      <q-btn label="Otkaži" @click="otkazi_gumb" color="red" class="q-ml-sm" />
     </div>
 
     <q-dialog v-model="showDialog">
@@ -137,6 +134,7 @@ export default {
       vrijemePocetka: null,
       vrijemeZavrsetka: null,
       decoded: null,
+      insertedPredmetId_dohvat: null,
 
       kategorije: [],
       korisnik: [],
@@ -197,7 +195,14 @@ export default {
 
     closeAndReload() {
       this.showDialog = false;
-      window.location.reload();
+      this.$router.push({ path: "prikaz", query: { id_predmeta: this.insertedPredmetId_dohvat } });
+    },
+
+    otkazi_gumb(){
+      this.$router.push("/Pocetna").then(() => {
+            // Refresh the page
+            window.location.reload();
+      });
     },
 
     async submitForm() {
@@ -254,6 +259,14 @@ export default {
             ...headers, // Include the JWT token in the headers
           },
         });
+        // Save the insertedPredmetId from the response
+        if (response.data && response.data.insertedPredmetId) {
+          const insertedPredmetId = response.data.insertedPredmetId;
+          console.log("Inserted Predmet ID:", insertedPredmetId);
+          this.insertedPredmetId_dohvat = insertedPredmetId;
+          // You can now use insertedPredmetId for further operations or store it
+        }
+
         this.showDialog = true;
       } catch (error) {
         console.error(error);
