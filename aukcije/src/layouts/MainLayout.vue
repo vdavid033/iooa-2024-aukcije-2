@@ -63,11 +63,13 @@
               <q-btn class="flex flex-center" style="width: 280px"> Dodaj aukciju </q-btn>
             </router-link>
           </div>
-          <div class="q-pa-sm col">
-            <router-link to="/Moj_profil" class="link-style" @click="toggleLeftDrawerClose">
-              <q-btn class="flex flex-center" style="width: 280px"> Moj profil </q-btn>
-            </router-link>
-          </div>
+          <template v-if="isAuthenticated()">
+            <div class="q-pa-sm col">
+              <router-link to="/Moj_profil" class="link-style" @click="toggleLeftDrawerClose">
+                <q-btn class="flex flex-center" style="width: 280px"> Moj profil </q-btn>
+              </router-link>
+            </div>
+          </template>
           <template v-if="isAdmin()">
             <div class="q-pa-sm col">
               <router-link to="/admin/" class="link-style" @click="toggleLeftDrawer">
