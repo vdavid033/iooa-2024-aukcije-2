@@ -67,16 +67,23 @@ app.post("/unosPredmeta", upload.none(), authJwt.verifyTokenUser, function (requ
     if (error) throw error;
     const insertedPredmetId = results.insertId;
 
-    Object.keys(data).forEach((key) => {
-      if (key.startsWith("file")) {
-        const base64String = data[key];
-        connection.query("INSERT INTO slika (slika, id_predmeta) VALUES (?, ?)", [base64String, insertedPredmetId], function (error) {
-          if (error) throw error;
-        });
-      }
-    });
+    const keys = Object.keys(data).filter(key => key.startsWith("file"));
+    let completed = 0;
 
-    return response.send({ error: false, message: "Predmet i slike su dodani." });
+    if (keys.length === 0) {
+      return response.send({ error: false, message: "Predmet dodan bez slika.", insertedPredmetId: insertedPredmetId });
+    }
+
+    keys.forEach((key) => {
+      const base64String = data[key];
+      connection.query("INSERT INTO slika (slika, id_predmeta) VALUES (?, ?)", [base64String, insertedPredmetId], function (error) {
+        if (error) throw error;
+        completed++;
+        if (completed === keys.length) {
+          return response.send({ error: false, message: "Predmet i slike su dodani.", insertedPredmetId: insertedPredmetId });
+        }
+      });
+    });
   });
 });
 
