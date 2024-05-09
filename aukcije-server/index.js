@@ -210,11 +210,13 @@ app.get("/api/vlastita-ponuda-korisnik/:id", (req, res) => {
   const { id } = req.params;
 
   connection.query(
-    `SELECT ponuda.*, predmet.*, slika.slika 
-    FROM ponuda 
-    INNER JOIN predmet ON ponuda.id_predmeta = predmet.id_predmeta 
-    LEFT JOIN slika ON predmet.id_predmeta = slika.id_predmeta 
-    WHERE predmet.id_korisnika = ?`,
+    `SELECT p.*, pr.*, s.*
+    FROM ponuda p
+    JOIN predmet pr ON p.id_predmeta = pr.id_predmeta
+    LEFT JOIN slika s ON pr.id_predmeta = s.id_predmeta
+    WHERE p.id_korisnika = ?
+    GROUP BY p.id_ponude, pr.id_predmeta, s.id_slike
+    ORDER BY p.vrijeme_ponude DESC;`,
     [id],
     (error, results) => {
       if (error) throw error;
@@ -222,7 +224,6 @@ app.get("/api/vlastita-ponuda-korisnik/:id", (req, res) => {
     }
   );
 });
-
 
 app.post("/api/unos-slike", authJwt.verifyTokenUser, function (req, res) {
   const data = req.body;
@@ -476,7 +477,7 @@ app.get("/api/vlastiti-predmeti/:id", authJwt.verifyTokenUser, (req, res) => {
     COALESCE(MAX(po.vrijednost_ponude), p.pocetna_cijena) AS trenutna_cijena
 FROM predmet p
 LEFT JOIN ponuda po ON p.id_predmeta = po.id_predmeta
-WHERE p.id_korisnika = ? AND p.vrijeme_zavrsetka > NOW()
+WHERE p.id_korisnika = ?
 GROUP BY p.id_predmeta
 ORDER BY preostalo_vrijeme DESC;`,
     [req.params.id],
@@ -501,23 +502,20 @@ app.delete("/api/brisanjePredmeta/:id", authJwt.verifyTokenUser, (req, res) => {
 app.put("/api/izmjenaPredmeta/:id", authJwt.verifyTokenUser, (req, res) => {
   const izmjena = req.body;
 
-  izmjena.vrijeme_pocetka = new Date(izmjena.vrijeme_pocetka).toISOString().replace('T', ' ').replace('Z', '');
-  izmjena.vrijeme_zavrsetka = new Date(izmjena.vrijeme_zavrsetka).toISOString().replace('T', ' ').replace('Z', '');
+  izmjena.vrijeme_pocetka = new Date(izmjena.vrijeme_pocetka).toISOString().replace("T", " ").replace("Z", "");
+  izmjena.vrijeme_zavrsetka = new Date(izmjena.vrijeme_zavrsetka).toISOString().replace("T", " ").replace("Z", "");
 
-  connection.query(
-    "UPDATE predmet SET naziv_predmeta = ?, opis_predmeta = ?, pocetna_cijena = ?, vrijeme_pocetka = ?, vrijeme_zavrsetka = ?, id_kategorije = ? WHERE id_predmeta = ?",
-    [izmjena.naziv_predmeta, izmjena.opis_predmeta, izmjena.pocetna_cijena, izmjena.vrijeme_pocetka, izmjena.vrijeme_zavrsetka, izmjena.id_kategorije, req.params.id],
-    (error, results) => {
-      if (error) throw error;
-      if (results.length > 0 && results[0].slike) {
-        results[0].slike = results[0].slike.split("|||");
-      }
-      res.send(results);
+  connection.query("UPDATE predmet SET naziv_predmeta = ?, opis_predmeta = ?, pocetna_cijena = ?, vrijeme_pocetka = ?, vrijeme_zavrsetka = ?, id_kategorije = ? WHERE id_predmeta = ?", [izmjena.naziv_predmeta, izmjena.opis_predmeta, izmjena.pocetna_cijena, izmjena.vrijeme_pocetka, izmjena.vrijeme_zavrsetka, izmjena.id_kategorije, req.params.id], (error, results) => {
+    if (error) throw error;
+    if (results.length > 0 && results[0].slike) {
+      results[0].slike = results[0].slike.split("|||");
     }
-  );
+    res.send(results);
+  });
 });
 
-app.get("/api/get-predmet2/:id", (req, res) => { //razlika izmedu ovog i obicnog get-predmet je što ovaj lovi i id kategorije i id slika.
+app.get("/api/get-predmet2/:id", (req, res) => {
+  //razlika izmedu ovog i obicnog get-predmet je što ovaj lovi i id kategorije i id slika.
   const { id } = req.params;
 
   connection.query(

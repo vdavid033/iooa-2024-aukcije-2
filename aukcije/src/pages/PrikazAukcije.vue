@@ -128,7 +128,6 @@ export default {
       showDialog: false,
       odabranaCijena: "",
       prices: [],
-      potvrdjenaCijena: null,
       predmet: {
         id_ponude: null,
         vrijednost_ponude: null,
@@ -144,7 +143,6 @@ export default {
   mounted() {
     axios.get(baseUrl + "get-predmet/" + this.id_predmeta, {}).then((response) => {
       this.item = response.data[0];
-      this.potvrdjenaCijena = this.item.pocetna_cijena;
       this.item.trenutna_cijena = this.item.pocetna_cijena;
       if (this.item.slike && this.item.slike.length > 0) {
         if (this.item.slike.length === 1) {
