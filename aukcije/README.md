@@ -1,43 +1,18 @@
 # aukcije (aukcije-projekt)
 
-aplikacija za aukcije
+Aplikacija za aukcije
+```
+cd aukcije
+```
 
-## Install the dependencies
+## Instalacija dodataka
 
-```bash
-yarn
-# or
+```
 npm install
 ```
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
+### Pokretanje stanice u dev modu
 
-```bash
+```
 quasar dev
 ```
-
-### Lint the files
-
-```bash
-yarn lint
-# or
-npm run lint
-```
-
-### Format the files
-
-```bash
-yarn format
-# or
-npm run format
-```
-
-### Build the app for production
-
-```bash
-quasar build
-```
-
-### Customize the configuration
-
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js).
