@@ -11,6 +11,8 @@ Baza podataka: MySQL (student.veleri.hr)
 - [Quasar](https://quasar.dev/)    ```npm install -g @quasar/cli``` <br>
 - [Git](https://git-scm.com/) | Opcionalno: [GitHub Desktop](https://desktop.github.com/)
 
+- Poveznica na gotovu aplikaciju: https://github.com/vdavid033/iooa-2024-aukcije-2.git
+
 ## Prvi put pokretanje
 ### Node.js Express
 Otvorirt Git (bash) i napisati sljedeće komande:
