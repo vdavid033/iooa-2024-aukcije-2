@@ -185,10 +185,6 @@ export default {
           label: "+ 100%: " + (this.item.trenutna_cijena * 2).toFixed(2) + " $",
           value: (this.item.trenutna_cijena * 2).toFixed(2),
         },
-        {
-          label: "Odaberi cijenu sam",
-          value: "Odaberi cijenu sam",
-        },
       ];
     });
   },
