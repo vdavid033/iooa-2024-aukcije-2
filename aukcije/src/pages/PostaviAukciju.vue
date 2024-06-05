@@ -231,6 +231,14 @@ export default {
           icon: "warning",
         });
         return;
+      }else if (this.vrijemePocetka > this.vrijemeZavrsetka) {
+        this.$q.notify({
+          color: "negative",
+          position: "top",
+          message: "Datum i vrijeme početka aukcije ne može biti kasnije od datuma i vrijeme završetka aukcije.",
+          icon: "warning",
+        });
+        return;
       }
 
       const formData = new FormData();
