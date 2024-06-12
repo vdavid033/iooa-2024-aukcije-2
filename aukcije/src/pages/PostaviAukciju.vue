@@ -169,6 +169,20 @@ export default {
 
     async onFileChange(e) {
       this.files = Array.from(e.target.files);
+      
+      const allImages = this.files.every(file => file.type.startsWith('image/'));
+      if (!allImages) {
+        this.$q.notify({
+          color: "negative",
+          position: "top",
+          message: "Dopuštene su samo slike.",
+          icon: "warning",
+        });
+        this.files = [];
+        e.target.value = null;
+        return;
+      }
+
       await this.convertImage();
     },
 
