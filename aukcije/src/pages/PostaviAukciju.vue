@@ -14,7 +14,18 @@
         <q-select filled lazy-rules emit-value v-model="selectedKategorija" label="Kategorija" :options="kategorije" option-label="label" option-value="value" map-options :rules="[(val) => (val !== null && val !== '') || 'Odaberite kategoriju']" />
       </div>
       <div style="width: 500px">
-        <q-input ref="pocetnaCijenaRef" filled type="number" label="Početna cijena proizvoda" v-model="pocetna_cijena" lazy-rules :rules="[(val) => (val !== null && val !== '') || 'Unesite početnu cijenu (brojevi)']"> </q-input>
+        <q-input 
+        ref="pocetnaCijenaRef" 
+        filled 
+        type="number" 
+        label="Početna cijena proizvoda" 
+        v-model="pocetna_cijena" 
+        lazy-rules 
+        :rules="[
+          (val) => (val !== null && val !== '') || 'Unesite početnu cijenu (brojevi)',
+          (val) => val >= 0 || 'Početna cijena ne može biti negativna'
+        ]"> 
+      </q-input>
       </div>
     </div>
     <div class="q-ml-sm flex flex-start q-gutter-sm">
@@ -237,6 +248,14 @@ export default {
           position: "top",
           message: "Datum i vrijeme početka aukcije ne može biti kasnije od datuma i vrijeme završetka aukcije.",
           icon: "warning",
+        });
+        return;
+      }else if (this.pocetna_cijena < 0) {
+        this.$q.notify({
+          color: "negative",
+          position: "top",
+          message: "Početna cijena ne može biti negativna.",
+          icon: "error",
         });
         return;
       }
