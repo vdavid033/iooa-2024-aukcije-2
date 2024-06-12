@@ -63,7 +63,7 @@
           <template v-slot:append>
             <q-icon name="access_time" class="cursor-pointer">
               <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                <q-time v-model="date_zavrsetak" mask="YYYY-MM-DD HH:mm" format24h>
+                <q-time v-model="vrijemeZavrsetka" mask="YYYY-MM-DD HH:mm" format24h>
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -322,10 +322,9 @@ export default {
 
     const now = new Date();
     now.setHours(now.getHours() + 2);
-    this.vrijemePocetka = now.toISOString().slice(0, 16);
+    this.vrijemePocetka = now.toISOString().slice(0, 16).replace('T', ' ');
     this.vrijemeZavrsetka = this.vrijemePocetka;
 
-    
   },
 };
 </script>
